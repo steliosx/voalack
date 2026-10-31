@@ -1,0 +1,119 @@
+# Voalack CI. Jobs run on GitHub-hosted ubuntu-24.04 runners; the full capture suite and recorded
+# qualification runs stay in disposable microVMs (see docs/CI.md). CI is a check, not an approval.
+name: CI
+
+on:
+  push:
+    branches: [main, "vo/**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  core:
+    name: ack-core tests (installed wheel)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Refuse a fork pull request before checkout
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo "fork pull request: refused by this workflow; a maintainer reruns it from a branch after review" >&2
+          exit 1
+      - name: Check out the exact commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build the wheel and run the core tests
+        env:
+          SRC: ${{ github.workspace }}
+          OUT: ${{ runner.temp }}/evidence
+          WORK: ${{ runner.temp }}/work
+        run: sh ci/run_core_tests.sh
+      - name: Show the test summary
+        if: always()
+        run: |
+          echo "tested commit: $GITHUB_SHA (event: $GITHUB_EVENT_NAME)"
+          cat "$RUNNER_TEMP/evidence/pytest-exit.txt" 2>/dev/null || echo "no pytest status recorded"
+          tail -n 5 "$RUNNER_TEMP/evidence/pytest.txt" 2>/dev/null || true
+      - name: Keep the evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: core-evidence-${{ github.sha }}
+          path: ${{ runner.temp }}/evidence
+          retention-days: 90
+
+  envelope:
+    name: voalack envelope tests (installed wheels)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Refuse a fork pull request before checkout
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo "fork pull request: refused by this workflow; a maintainer reruns it from a branch after review" >&2
+          exit 1
+      - name: Check out the exact commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build the wheels and run the envelope tests
+        env:
+          SRC: ${{ github.workspace }}
+          OUT: ${{ runner.temp }}/evidence
+          WORK: ${{ runner.temp }}/work
+        run: sh ci/run_envelope_tests.sh
+      - name: Show the test summary
+        if: always()
+        run: |
+          echo "tested commit: $GITHUB_SHA (event: $GITHUB_EVENT_NAME)"
+          cat "$RUNNER_TEMP/evidence/pytest-exit.txt" 2>/dev/null || echo "no pytest status recorded"
+          tail -n 5 "$RUNNER_TEMP/evidence/pytest.txt" 2>/dev/null || true
+      - name: Keep the evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: envelope-evidence-${{ github.sha }}
+          path: ${{ runner.temp }}/evidence
+          retention-days: 90
+
+  launcher:
+    name: CI launcher failure paths (fake gh and smolvm)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Refuse a fork pull request before checkout
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo "fork pull request: refused by this workflow; a maintainer reruns it from a branch after review" >&2
+          exit 1
+      - name: Check out the exact commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run the launcher tests
+        env:
+          SRC: ${{ github.workspace }}
+          OUT: ${{ runner.temp }}/evidence
+          WORK: ${{ runner.temp }}/work
+        run: sh ci/run_launcher_tests.sh
+      - name: Show the test summary
+        if: always()
+        run: |
+          echo "tested commit: $GITHUB_SHA (event: $GITHUB_EVENT_NAME)"
+          cat "$RUNNER_TEMP/evidence/pytest-exit.txt" 2>/dev/null || echo "no pytest status recorded"
+          tail -n 5 "$RUNNER_TEMP/evidence/pytest.txt" 2>/dev/null || true
+      - name: Keep the evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: launcher-evidence-${{ github.sha }}
+          path: ${{ runner.temp }}/evidence
+          retention-days: 90

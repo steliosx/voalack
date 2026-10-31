@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools==83.0.0", "wheel==0.48.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alerta-ack-core"
+version = "0.1.0.dev0"
+description = "Provider-neutral primitives for signed Alerta acknowledgement intents (name provisional)"
+requires-python = ">=3.12,<3.13"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

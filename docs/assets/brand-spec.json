@@ -1,0 +1,89 @@
+{
+  "name": "Voalack",
+  "wordmark": "voalack.",
+  "concept": "Handoff",
+  "version": "1.0",
+  "date": "2026-10-01",
+  "status": "Original editable vector identity; project adoption pending.",
+  "meaning": "A deliberate acknowledgement is handed toward a precise receiver. The visible separation keeps the request and its destination distinct.",
+  "palette": {
+    "cobalt": "#5363F0",
+    "periwinkle_dark_theme": "#8B96FF",
+    "ink": "#182033",
+    "paper": "#F6F7FB",
+    "white": "#FFFFFF"
+  },
+  "canonical_mark_viewbox": [
+    0,
+    0,
+    320,
+    320
+  ],
+  "canonical_logo_viewbox": [
+    0,
+    0,
+    1576,
+    320
+  ],
+  "construction": {
+    "parts": 2,
+    "receiver": "Rounded receiver open left; one filled path.",
+    "handoff": "Separate 184 by 72 unit capsule, vertically centred; one filled path.",
+    "thickness_units": 72,
+    "receiver_outer_corner_radius_units": 88,
+    "receiver_inner_corner_radius_units": 24,
+    "capsule_radius_units": 36,
+    "capsule_to_inner_wall_gap_units": 64,
+    "mark_to_wordmark_gap_units": 64,
+    "wordmark": "Seven purpose-drawn lowercase letter paths and a circular period.",
+    "wordmark_origin": [
+      384,
+      48
+    ],
+    "runtime_fonts": false,
+    "external_resources": false
+  },
+  "clear_space": {
+    "minimum_units": 64,
+    "rule": "Keep one inner-gap width (64 mark units) clear around the complete mark or lockup.",
+    "icon_exception": "Supplied favicon and app icon already include internal padding."
+  },
+  "minimum_sizes": {
+    "standalone_mark_px": 24,
+    "full_wordmark_width_px": 176,
+    "desktop_header_width_px": 208,
+    "mobile_header_width_px": 180,
+    "favicon_px": 16,
+    "guidance": "Use the padded favicon below 24 px. Do not close the gap or add small details."
+  },
+  "assets": {
+    "voalack-mark.svg": "Cobalt receiver and ink capsule; light surfaces.",
+    "voalack-mark-dark.svg": "Periwinkle receiver and off-white capsule; dark surfaces.",
+    "voalack-mark-mono.svg": "Ink mark for light surfaces and one-colour output.",
+    "voalack-mark-white.svg": "White mark for dark surfaces and reversed output.",
+    "voalack-logo-light.svg": "Cobalt receiver and period, ink capsule and letters; light surfaces.",
+    "voalack-logo-dark.svg": "Periwinkle receiver and period, off-white capsule and letters; dark surfaces.",
+    "voalack-logo-mono.svg": "All-ink horizontal lockup; one-colour output.",
+    "voalack-logo-white.svg": "All-white horizontal lockup; reversed one-colour output.",
+    "favicon.svg": "White mark on a padded cobalt rounded square; 16–32 px.",
+    "voalack-app-icon.svg": "512-unit master of the same icon composition."
+  },
+  "usage": [
+    "Keep the receiver open on the left and the capsule separate.",
+    "Preserve the two paths, their weight and the negative-space gap.",
+    "Keep the period matched to the receiver colour: cobalt on light surfaces, periwinkle on dark surfaces.",
+    "Use the appropriate light, dark, ink or white variant.",
+    "Do not stretch, rotate, outline, merge the shapes or add shadows and gradients to the logo.",
+    "The mark does not represent bidirectional synchronisation, backup, recovery or guaranteed delivery."
+  ],
+  "rights_note": "Original geometry and lettering. No vendor logos, branded font files or third-party artwork are embedded. No trademark clearance, registration, certification or affiliation is asserted. Licensing is left to the repository owner.",
+  "reproduce": {
+    "svg_assets": "python generate_brand.py",
+    "previews_and_png": "python generate_brand.py --render",
+    "core_dependencies": "Python standard library",
+    "render_dependencies": [
+      "Inkscape",
+      "Pillow"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools==83.0.0", "wheel==0.48.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "voalack"
+version = "0.1.0.dev0"
+description = "Durable Alerta ACK capture for delivery to Veeam ONE (development; not qualified)"
+requires-python = ">=3.12,<3.13"
+license = "Apache-2.0"
+dependencies = ["alerta-ack-core==0.1.0.dev0"]
+
+[project.entry-points."alerta.plugins"]
+voalack = "voalack.plugin:VoalackCapture"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+voalack = ["sql/*.sql", "sql/*.json"]

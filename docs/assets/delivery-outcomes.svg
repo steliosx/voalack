@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1680" viewBox="0 0 1280 1680" role="img" aria-labelledby="title desc">
+<title id="title">Every outcome has a meaning: seven acknowledgement states</title>
+<desc id="desc">Seven operator-facing acknowledgement states from the canonical design contract. LOCAL_ACK: Alerta changed locally; this never means remote success. Noneligible historical actions can remain local-only. QUEUED: a local transaction captured a candidate; verification and policy checks precede any remote access. REMOTE_CONFIRMED: the exact permitted target and occurrence, with expected ACK evidence, were observed under the qualified contract; no new send. ALREADY_ACKED: the source was already ACKed; make no attribution claim and do not re-ACK to add or overwrite a comment. BLOCKED: a named policy, identity, configuration or qualification reason prevents sending; no send. SUPERSEDED: a new approved binding or generation invalidated work before send; retain evidence, and never erase a possibly-sent old attempt. UNCERTAIN: mutation may have reached ONE, or its result cannot be bound safely; preserve the attempt and suspend affected mutation ownership. Read-only reconciliation only. Local acknowledgement alone does not confirm delivery.</desc>
+<defs>
+<marker id="arrow-cobalt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#5363F0"/></marker>
+<marker id="arrow-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#182033"/></marker>
+</defs>
+<rect width="1280" height="1680" fill="#F6F7FB"/>
+<text x="48" y="49" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="start" letter-spacing="1.6">PLANNED ACKNOWLEDGEMENT OUTCOMES</text>
+<text x="48" y="106" font-family="DejaVu Sans, Arial, sans-serif" font-size="40" font-weight="700" fill="#182033" text-anchor="start">Every outcome has a meaning</text>
+<text x="48" y="148" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#555E75" text-anchor="start">Seven operator-facing states · meaning and allowed next step</text>
+<rect x="48" y="194" width="580" height="332" rx="18" fill="#FFFFFF" stroke="#CAD0E2" stroke-width="2"/>
+<text x="80" y="247" font-family="DejaVu Sans, Arial, sans-serif" font-size="28" font-weight="700" fill="#182033" text-anchor="start">LOCAL_ACK</text>
+<circle cx="577" cy="239" r="20" fill="none" stroke="#5363F0" stroke-width="3"/>
+<rect x="571" y="233" width="12" height="12" rx="2" fill="#5363F0"/>
+<text x="80" y="291" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="start" letter-spacing="1">MEANING</text>
+<text x="80" y="328" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">Alerta changed locally.</text>
+<text x="80" y="360" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">This never means remote success.</text>
+<text x="80" y="431" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="start" letter-spacing="1">NEXT STEP</text>
+<text x="80" y="468" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">Noneligible historical actions</text>
+<text x="80" y="500" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">can remain local-only.</text>
+<rect x="652" y="194" width="580" height="332" rx="18" fill="#E9ECFF"/>
+<text x="684" y="247" font-family="DejaVu Sans, Arial, sans-serif" font-size="28" font-weight="700" fill="#182033" text-anchor="start">QUEUED</text>
+<circle cx="1181" cy="239" r="20" fill="none" stroke="#5363F0" stroke-width="3"/>
+<path d="M 1181 227 V 239 L 1190 245" fill="none" stroke="#5363F0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="684" y="291" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="start" letter-spacing="1">MEANING</text>
+<text x="684" y="328" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">Local transaction captured</text>
+<text x="684" y="360" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">a candidate.</text>
+<text x="684" y="431" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="start" letter-spacing="1">NEXT STEP</text>
+<text x="684" y="468" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">Verify and check policy before</text>
+<text x="684" y="500" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">any remote access.</text>
+<rect x="48" y="550" width="580" height="332" rx="18" fill="#5363F0"/>
+<text x="80" y="603" font-family="DejaVu Sans, Arial, sans-serif" font-size="28" font-weight="700" fill="#FFFFFF" text-anchor="start">REMOTE_CONFIRMED</text>
+<circle cx="577" cy="595" r="20" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+<path d="M 567 595 L 574 602 L 588 587" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="80" y="647" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF" text-anchor="start" letter-spacing="1">MEANING</text>
+<text x="80" y="684" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#FFFFFF" text-anchor="start">Exact permitted target/occurrence</text>
+<text x="80" y="716" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#FFFFFF" text-anchor="start">+ expected ACK evidence observed</text>
+<text x="80" y="748" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#FFFFFF" text-anchor="start">under the qualified contract.</text>
+<text x="80" y="787" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF" text-anchor="start" letter-spacing="1">NEXT STEP</text>
+<text x="80" y="824" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#FFFFFF" text-anchor="start">No new send.</text>
+<rect x="652" y="550" width="580" height="332" rx="18" fill="#FFFFFF" stroke="#CAD0E2" stroke-width="2"/>
+<text x="684" y="603" font-family="DejaVu Sans, Arial, sans-serif" font-size="28" font-weight="700" fill="#182033" text-anchor="start">ALREADY_ACKED</text>
+<circle cx="1181" cy="595" r="20" fill="none" stroke="#5363F0" stroke-width="3"/>
+<path d="M 1171 595 H 1191" fill="none" stroke="#5363F0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="684" y="647" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="start" letter-spacing="1">MEANING</text>
+<text x="684" y="684" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">Source was already ACKed.</text>
+<text x="684" y="716" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">No attribution claim.</text>
+<text x="684" y="787" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="start" letter-spacing="1">NEXT STEP</text>
+<text x="684" y="824" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">Do not re-ACK to add or</text>
+<text x="684" y="856" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">overwrite a comment.</text>
+<rect x="48" y="906" width="580" height="332" rx="18" fill="#FFFFFF" stroke="#CAD0E2" stroke-width="2"/>
+<text x="80" y="959" font-family="DejaVu Sans, Arial, sans-serif" font-size="28" font-weight="700" fill="#182033" text-anchor="start">BLOCKED</text>
+<circle cx="577" cy="951" r="20" fill="none" stroke="#5363F0" stroke-width="3"/>
+<path d="M 564 964 L 590 938" fill="none" stroke="#5363F0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="80" y="1003" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="start" letter-spacing="1">MEANING</text>
+<text x="80" y="1040" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">Named policy, identity, configuration</text>
+<text x="80" y="1072" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">or qualification reason.</text>
+<text x="80" y="1143" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="start" letter-spacing="1">NEXT STEP</text>
+<text x="80" y="1180" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">No send.</text>
+<rect x="652" y="906" width="580" height="332" rx="18" fill="#E9ECFF"/>
+<text x="684" y="959" font-family="DejaVu Sans, Arial, sans-serif" font-size="28" font-weight="700" fill="#182033" text-anchor="start">SUPERSEDED</text>
+<circle cx="1181" cy="951" r="20" fill="none" stroke="#5363F0" stroke-width="3"/>
+<path d="M 1170 951 H 1191 M 1184 944 L 1191 951 L 1184 958" fill="none" stroke="#5363F0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="684" y="1003" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="start" letter-spacing="1">MEANING</text>
+<text x="684" y="1040" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">New approved binding/generation</text>
+<text x="684" y="1072" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">invalidated work before send.</text>
+<text x="684" y="1143" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="start" letter-spacing="1">NEXT STEP</text>
+<text x="684" y="1180" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">Retain evidence. A possibly-sent</text>
+<text x="684" y="1212" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#182033" text-anchor="start">old attempt cannot be erased.</text>
+<rect x="48" y="1262" width="1184" height="272" rx="18" fill="#182033"/>
+<text x="80" y="1315" font-family="DejaVu Sans, Arial, sans-serif" font-size="28" font-weight="700" fill="#FFFFFF" text-anchor="start">UNCERTAIN</text>
+<circle cx="1181" cy="1307" r="20" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+<path d="M 1181 1296 V 1309" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="1181" cy="1317" r="1.6" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1"/>
+<text x="80" y="1361" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF" text-anchor="start" letter-spacing="1">MEANING</text>
+<text x="80" y="1400" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#FFFFFF" text-anchor="start">Mutation may have reached ONE,</text>
+<text x="80" y="1432" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#FFFFFF" text-anchor="start">or its result cannot be bound safely.</text>
+<text x="684" y="1361" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF" text-anchor="start" letter-spacing="1">NEXT STEP</text>
+<text x="684" y="1400" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#FFFFFF" text-anchor="start">Preserve the attempt and suspend</text>
+<text x="684" y="1432" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#FFFFFF" text-anchor="start">affected mutation ownership.</text>
+<text x="684" y="1485" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="700" fill="#FFFFFF" text-anchor="start">Read-only reconciliation only.</text>
+<rect x="48" y="1570" width="1184" height="76" rx="14" fill="#FFFFFF" stroke="#CAD0E2" stroke-width="2"/>
+<text x="640" y="1617" font-family="DejaVu Sans, Arial, sans-serif" font-size="26" font-weight="700" fill="#182033" text-anchor="middle">Local acknowledgement alone does not confirm delivery.</text>
+</svg>

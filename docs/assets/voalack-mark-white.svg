@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320" role="img" aria-labelledby="title" aria-describedby="description">
+<title id="title">Voalack — Handoff mark, white</title>
+<desc id="description">Two separate solid shapes: a rounded receiver open to the left and an incoming capsule, with a clear gap before the inner wall.</desc>
+<g><path fill="#FFFFFF" d="M112 0H232C280.601 0 320 39.399 320 88V232C320 280.601 280.601 320 232 320H112C92.118 320 76 303.882 76 284C76 264.118 92.118 248 112 248H224C237.255 248 248 237.255 248 224V96C248 82.745 237.255 72 224 72H112C92.118 72 76 55.882 76 36C76 16.118 92.118 0 112 0Z"/><path fill="#FFFFFF" d="M36 124H148C167.882 124 184 140.118 184 160C184 179.882 167.882 196 148 196H36C16.118 196 0 179.882 0 160C0 140.118 16.118 124 36 124Z"/></g>
+</svg>

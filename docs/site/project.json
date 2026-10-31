@@ -1,0 +1,34 @@
+{
+  "name": "Voalack",
+  "tagline": "Acknowledgement, with accountability.",
+  "site_url": "https://voalack.stel.chatgpt.site",
+  "repository": "https://github.com/steliosx/voalack",
+  "checked_at": "2026-10-01T21:13:49Z",
+  "checked_date": "1 October 2026",
+  "main_sha": "539707e90fa1d4470c852f80a38027095101f5d8",
+  "design_sha": "539707e90fa1d4470c852f80a38027095101f5d8",
+  "integration_sha": "539707e90fa1d4470c852f80a38027095101f5d8",
+  "baseline_sha": "539707e90fa1d4470c852f80a38027095101f5d8",
+  "stage": "Early development",
+  "summary": "Design agreed. Original prototype baseline reproduced. Durable implementation and live qualification remain open.",
+  "baseline_tests": 32,
+  "baseline_python": "3.12.14",
+  "baseline_alerta": "9.1.0",
+  "license_status": "No Voalack project licence is published in the inspected repository.",
+  "updates": [
+    {
+      "date": "2026-10-01",
+      "label": "Prototype baseline",
+      "title": "32 tests, with a stricter baseline runner.",
+      "text": "The original ACK MVP was rebuilt and tested as an installed wheel. The corrected runner also demonstrated that failed tests, a changed wheel member and a missing entry point each return failure. Durable-runtime and live-system qualification remain ahead.",
+      "source": "baseline"
+    },
+    {
+      "date": "2026-10-01",
+      "label": "Design agreement",
+      "title": "A durable handoff, specified.",
+      "text": "The design and its transaction, capture and audit amendments are published on main. Implementation can proceed, with real Alerta and PostgreSQL qualification still required.",
+      "source": "concurrence"
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+module file: /venv/lib/python3.12/site-packages/alerta_veeam_one/__init__.py
+entry point: alerta_veeam_one.plugin:VeeamOneAckPlugin -> <class 'alerta_veeam_one.plugin.VeeamOneAckPlugin'>

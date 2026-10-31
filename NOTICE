@@ -1,0 +1,12 @@
+Voalack
+Copyright 2026 Voalack contributors
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Portions of packages/ack-core are derived from Zabalack (Zab-al-ack contributors),
+licensed under the Apache License, Version 2.0; see packages/ack-core/NOTICE.
+
+Voalack runs as a plugin inside Alerta (https://github.com/alerta/alerta), which
+is distributed separately under the Apache License, Version 2.0. Veeam ONE is a
+product of Veeam Software. No affiliation with or endorsement by Alerta or Veeam
+is implied. See THIRD_PARTY.md.

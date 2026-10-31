@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760" role="img" aria-labelledby="title desc">
+<title id="title">Planned acknowledgement flow</title>
+<desc id="desc">Planned architecture, not a claim of implemented runtime. The existing PowerShell alarm feed runs from ONE to Alerta. Only an authorised human single-alert ACK triggers the proposed local PostgreSQL transaction, which captures the Alerta ACK and a durable candidate together. Candidate verification and an exact approved binding precede a separate ONE session owner worker writing the permitted source ACK. The worker then reads back source state and records an outcome note in Alerta. ONE-origin ACK mirroring is outside the current scope. Design agreed; implementation and live qualification remain open.</desc>
+<defs>
+<marker id="arrow-cobalt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#5363F0"/></marker>
+<marker id="arrow-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#182033"/></marker>
+</defs>
+<rect width="1280" height="760" fill="#F6F7FB"/>
+<text x="48" y="47" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="start" letter-spacing="1.6">PLANNED ARCHITECTURE</text>
+<text x="48" y="102" font-family="DejaVu Sans, Arial, sans-serif" font-size="40" font-weight="700" fill="#182033" text-anchor="start">Planned acknowledgement flow</text>
+<text x="48" y="142" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#555E75" text-anchor="start">An explicit human action starts the proposed delivery path.</text>
+<rect x="48" y="182" width="350" height="164" rx="14" fill="#FFFFFF" stroke="#CAD0E2" stroke-width="2"/>
+<text x="72" y="226" font-family="DejaVu Sans, Arial, sans-serif" font-size="30" font-weight="700" fill="#182033" text-anchor="start">Alerta</text>
+<text x="72" y="270" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#182033" text-anchor="start">User-visible local ACK</text>
+<text x="72" y="307" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#182033" text-anchor="start">Read-back outcome note</text>
+<rect x="886" y="182" width="346" height="164" rx="14" fill="#182033"/>
+<text x="910" y="226" font-family="DejaVu Sans, Arial, sans-serif" font-size="30" font-weight="700" fill="#FFFFFF" text-anchor="start">ONE</text>
+<text x="910" y="270" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="start">Source alarm state</text>
+<text x="910" y="307" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="start">Source ACK state</text>
+<text x="642" y="229" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#182033" text-anchor="middle">Existing PowerShell</text>
+<text x="642" y="258" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#182033" text-anchor="middle">alarm feed</text>
+<path d="M 877 281 H 407" fill="none" stroke="#182033" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<text x="64" y="394" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#182033" text-anchor="start">Only authorised human</text>
+<text x="64" y="424" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#182033" text-anchor="start">single-alert ACK</text>
+<path d="M 376 355 V 477" fill="none" stroke="#5363F0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cobalt)"/>
+<path d="M 903 477 V 446 H 427 V 323 H 407" fill="none" stroke="#5363F0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cobalt)"/>
+<text x="653" y="429" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="middle">Evidence + outcome note</text>
+<path d="M 1208 477 V 355" fill="none" stroke="#5363F0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cobalt)"/>
+<text x="1190" y="408" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="end">ACK</text>
+<path d="M 946 355 V 477" fill="none" stroke="#5363F0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cobalt)"/>
+<text x="965" y="393" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" font-weight="400" fill="#5363F0" text-anchor="start">Then</text>
+<text x="965" y="422" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="start">read-back</text>
+<rect x="48" y="486" width="350" height="166" rx="14" fill="#5363F0"/>
+<text x="72" y="527" font-family="DejaVu Sans, Arial, sans-serif" font-size="27" font-weight="700" fill="#FFFFFF" text-anchor="start">Local transaction</text>
+<text x="72" y="559" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="start">PostgreSQL · atomic commit</text>
+<text x="72" y="599" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="start">Alerta ACK + durable</text>
+<text x="72" y="628" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="start">candidate saved together</text>
+<rect x="502" y="486" width="280" height="166" rx="14" fill="#FFFFFF" stroke="#CAD0E2" stroke-width="2"/>
+<text x="526" y="527" font-family="DejaVu Sans, Arial, sans-serif" font-size="27" font-weight="700" fill="#182033" text-anchor="start">Verification</text>
+<text x="526" y="568" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#182033" text-anchor="start">Candidate checks</text>
+<text x="526" y="598" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#182033" text-anchor="start">+ exact approved</text>
+<text x="526" y="628" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#182033" text-anchor="start">binding</text>
+<rect x="886" y="486" width="346" height="166" rx="14" fill="#182033"/>
+<text x="910" y="527" font-family="DejaVu Sans, Arial, sans-serif" font-size="27" font-weight="700" fill="#FFFFFF" text-anchor="start">ONE ACK worker</text>
+<text x="910" y="568" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="start">Separate session owner</text>
+<text x="910" y="598" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="start">Writes permitted ACK</text>
+<text x="910" y="628" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#FFFFFF" text-anchor="start">Then reads back</text>
+<text x="450" y="550" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="middle">verify</text>
+<path d="M 407 570 H 493" fill="none" stroke="#5363F0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cobalt)"/>
+<text x="834" y="550" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#5363F0" text-anchor="middle">pass</text>
+<path d="M 791 570 H 877" fill="none" stroke="#5363F0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-cobalt)"/>
+<circle cx="60" cy="696" r="11" fill="none" stroke="#182033" stroke-width="2"/>
+<path d="M 52 704 L 68 688" fill="none" stroke="#182033" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="84" y="704" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#182033" text-anchor="start">ONE-origin ACK mirroring is outside the current scope.</text>
+<text x="48" y="741" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#555E75" text-anchor="start">Design agreed · implementation and live qualification remain open</text>
+</svg>

@@ -1,0 +1,20 @@
+differential: 500 random intents identical (build, canonical bytes, marker, verify, tamper)
+error parity: oversized_login: ('BindingError', ('invalid_string',))
+error parity: lone_surrogate: ('UnicodeEncodeError', ('utf-8',))
+error parity: bad_version: ('BindingError', ('intent_version',))
+error parity: sign 'bad kid' 32B: ('BindingError', ('key_id_invalid',))
+error parity: sign 'k1' 31B: ('KeyUnavailable', ('signing_key_unavailable',))
+error parity: sign 'k1' 129B: ('KeyUnavailable', ('signing_key_unavailable',))
+error parity: verify 32B key valid: accepted
+error parity: verify 32B key tampered: ('BindingError', ('mac_invalid',))
+error parity: verify 128B key valid: accepted
+error parity: verify 128B key tampered: ('BindingError', ('mac_invalid',))
+error parity: verify 129B key valid: accepted
+error parity: verify 129B key tampered: ('BindingError', ('mac_invalid',))
+error parity: verify 200B key valid: accepted
+error parity: verify 200B key tampered: ('BindingError', ('mac_invalid',))
+error parity: verify 1024B key valid: accepted
+error parity: verify 1024B key tampered: ('BindingError', ('mac_invalid',))
+error parity: verify 31B key: ('KeyUnavailable', ('verification_key_unavailable',))
+error parity: verify missing key: ('KeyUnavailable', ('verification_key_unavailable',))
+error parity: verify str key: ('KeyUnavailable', ('verification_key_unavailable',))

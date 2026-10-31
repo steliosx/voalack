@@ -1,0 +1,4 @@
+fault=none vm_exit=0 original suites: 0 patched suites: 0 comparison: 0 differential: 0 
+fault=orig vm_exit=1 original suites: 1 patched suites: 0 comparison: 1 differential: 0 
+fault=new vm_exit=1 original suites: 0 patched suites: 1 comparison: 1 differential: 0 
+fault=differential vm_exit=1 original suites: 0 patched suites: 0 comparison: 0 differential: 1 

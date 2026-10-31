@@ -1,0 +1,4 @@
+fault=none smolvm_exit=0
+fault=pytest smolvm_exit=1
+fault=wheel smolvm_exit=1
+fault=entrypoint smolvm_exit=1

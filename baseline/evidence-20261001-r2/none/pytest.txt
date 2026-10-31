@@ -1,0 +1,50 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0
+rootdir: /tmp
+collected 32 items
+
+tests/test_core.py ................                                      [ 50%]
+tests/test_plugin.py ................                                    [100%]
+
+=============================== warnings summary ===============================
+tests/test_plugin.py::PluginTests::test_real_note_model_cannot_prepend_stale_ack_after_incoming_error
+  /venv/lib/python3.12/site-packages/alerta/models/note.py:25: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.create_time = kwargs['create_time'] if 'create_time' in kwargs else datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+==================================== PASSES ====================================
+------------------ generated xml file: /out/test-results.xml -------------------
+=========================== short test summary info ============================
+PASSED tests/test_core.py::CoreHTTPSTests::test_ack_one_id_empty_200_verified_with_operator_comment
+PASSED tests/test_core.py::CoreHTTPSTests::test_changed_capture_or_identity_is_blocked_before_login
+PASSED tests/test_core.py::CoreHTTPSTests::test_changed_remote_count_time_identity_or_status_never_resolves
+PASSED tests/test_core.py::CoreHTTPSTests::test_changed_trigger_time_after_ack_is_uncertain_despite_own_marker
+PASSED tests/test_core.py::CoreHTTPSTests::test_comment_keeps_marker_and_attribution_within_utf16_limit
+PASSED tests/test_core.py::CoreHTTPSTests::test_default_dry_run_validates_without_resolve
+PASSED tests/test_core.py::CoreHTTPSTests::test_empty_200_without_ack_state_is_uncertain
+PASSED tests/test_core.py::CoreHTTPSTests::test_lock_contention_blocks_before_login
+PASSED tests/test_core.py::CoreHTTPSTests::test_other_ack_is_left_unchanged
+PASSED tests/test_core.py::CoreHTTPSTests::test_own_marker_on_ack_with_changed_trigger_time_is_blocked
+PASSED tests/test_core.py::CoreHTTPSTests::test_post_500_is_uncertain_and_not_automatically_retried
+PASSED tests/test_core.py::CoreHTTPSTests::test_post_timeout_is_uncertain_and_not_automatically_retried
+PASSED tests/test_core.py::CoreHTTPSTests::test_preflight_failure_is_failed_and_never_resolves
+PASSED tests/test_core.py::CoreHTTPSTests::test_repeat_after_confirmed_ack_never_posts_again
+PASSED tests/test_core.py::CoreHTTPSTests::test_unbound_alert_is_blocked_without_any_remote_request
+PASSED tests/test_core.py::CoreHTTPSTests::test_untrusted_tls_never_sends_credentials_or_resolve
+PASSED tests/test_plugin.py::PluginTests::test_ack_uses_authenticated_actor_and_source_snapshot
+PASSED tests/test_plugin.py::PluginTests::test_api_key_identity_and_missing_login_do_nothing
+PASSED tests/test_plugin.py::PluginTests::test_ingestion_and_precommit_status_hook_never_write_back
+PASSED tests/test_plugin.py::PluginTests::test_invalid_core_result_is_recorded_as_failure
+PASSED tests/test_plugin.py::PluginTests::test_missing_config_is_visible_blocked_result
+PASSED tests/test_plugin.py::PluginTests::test_non_ack_actions_and_non_ack_state_do_nothing
+PASSED tests/test_plugin.py::PluginTests::test_non_veeam_alerts_do_nothing
+PASSED tests/test_plugin.py::PluginTests::test_note_storage_failure_does_not_raise_or_expose_exception_text
+PASSED tests/test_plugin.py::PluginTests::test_outcome_note_has_single_line_bounded_detail
+PASSED tests/test_plugin.py::PluginTests::test_real_note_model_cannot_prepend_stale_ack_after_incoming_error
+PASSED tests/test_plugin.py::PluginTests::test_remote_exception_is_sanitized_and_does_not_raise
+PASSED tests/test_plugin.py::PluginTests::test_retry_custom_action_runs_without_local_unack
+PASSED tests/test_plugin.py::PluginTests::test_snapshot_is_deep_copy
+PASSED tests/test_plugin.py::ActualActionRouteTests::test_authorized_ack_calls_hook_after_local_update
+PASSED tests/test_plugin.py::ActualActionRouteTests::test_readonly_user_gets_403_before_lookup_commit_or_hook
+PASSED tests/test_plugin.py::ActualActionRouteTests::test_remote_failure_keeps_http_success_and_ack
+======================== 32 passed, 1 warning in 2.49s =========================

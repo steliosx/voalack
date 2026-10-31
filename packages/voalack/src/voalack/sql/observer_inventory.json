@@ -1,0 +1,1013 @@
+{
+ "tables": [
+  [
+   "observation_chains"
+  ],
+  [
+   "observation_completions"
+  ],
+  [
+   "observation_evidence"
+  ],
+  [
+   "observation_reads"
+  ],
+  [
+   "source_observations"
+  ]
+ ],
+ "columns": [
+  [
+   "instance_config",
+   "observer_enabled",
+   "boolean",
+   true,
+   "false"
+  ],
+  [
+   "observation_chains",
+   "alert_id",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_chains",
+   "binding_id",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_chains",
+   "binding_revision",
+   "integer",
+   true,
+   null
+  ],
+  [
+   "observation_chains",
+   "created_at",
+   "timestamp with time zone",
+   true,
+   "clock_timestamp()"
+  ],
+  [
+   "observation_chains",
+   "instance_id",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_chains",
+   "target_id",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_chains",
+   "target_kind",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_completions",
+   "classification",
+   "text",
+   false,
+   null
+  ],
+  [
+   "observation_completions",
+   "client_read_completed_at",
+   "timestamp with time zone",
+   false,
+   null
+  ],
+  [
+   "observation_completions",
+   "client_read_started_at",
+   "timestamp with time zone",
+   false,
+   null
+  ],
+  [
+   "observation_completions",
+   "input_sha256",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_completions",
+   "obs_id",
+   "uuid",
+   true,
+   null
+  ],
+  [
+   "observation_completions",
+   "recorded_at",
+   "timestamp with time zone",
+   true,
+   "clock_timestamp()"
+  ],
+  [
+   "observation_completions",
+   "result",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_completions",
+   "state_sha256",
+   "text",
+   false,
+   null
+  ],
+  [
+   "observation_evidence",
+   "evidence_id",
+   "bigint",
+   true,
+   "nextval('voalack.observation_evidence_evidence_id_seq'::regclass)"
+  ],
+  [
+   "observation_evidence",
+   "input_octets",
+   "integer",
+   false,
+   null
+  ],
+  [
+   "observation_evidence",
+   "input_sha256",
+   "text",
+   false,
+   null
+  ],
+  [
+   "observation_evidence",
+   "kind",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_evidence",
+   "obs_id",
+   "uuid",
+   true,
+   null
+  ],
+  [
+   "observation_evidence",
+   "reason",
+   "text",
+   false,
+   null
+  ],
+  [
+   "observation_evidence",
+   "recorded_at",
+   "timestamp with time zone",
+   true,
+   "clock_timestamp()"
+  ],
+  [
+   "observation_reads",
+   "acquired_epoch",
+   "bigint",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "acquired_head_sha256",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "alert_id",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "binding_id",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "binding_revision",
+   "integer",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "config_revision",
+   "integer",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "credential_ref",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "eligible",
+   "jsonb",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "instance_id",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "obs_id",
+   "uuid",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "provider_contract",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "reader_generation",
+   "bigint",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "reader_incarnation",
+   "uuid",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "reservation_seq",
+   "bigint",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "reserved_at",
+   "timestamp with time zone",
+   true,
+   "clock_timestamp()"
+  ],
+  [
+   "observation_reads",
+   "target_id",
+   "text",
+   true,
+   null
+  ],
+  [
+   "observation_reads",
+   "target_kind",
+   "text",
+   true,
+   null
+  ],
+  [
+   "source_observations",
+   "alert_id",
+   "text",
+   true,
+   null
+  ],
+  [
+   "source_observations",
+   "binding_id",
+   "text",
+   true,
+   null
+  ],
+  [
+   "source_observations",
+   "binding_revision",
+   "integer",
+   true,
+   null
+  ],
+  [
+   "source_observations",
+   "classification",
+   "text",
+   true,
+   null
+  ],
+  [
+   "source_observations",
+   "instance_id",
+   "text",
+   true,
+   null
+  ],
+  [
+   "source_observations",
+   "obs_id",
+   "uuid",
+   true,
+   null
+  ],
+  [
+   "source_observations",
+   "previous_obs_id",
+   "uuid",
+   false,
+   null
+  ],
+  [
+   "source_observations",
+   "recorded_at",
+   "timestamp with time zone",
+   true,
+   "clock_timestamp()"
+  ],
+  [
+   "source_observations",
+   "reservation_seq",
+   "bigint",
+   true,
+   null
+  ],
+  [
+   "source_observations",
+   "state_sha256",
+   "text",
+   true,
+   null
+  ],
+  [
+   "source_observations",
+   "summary",
+   "jsonb",
+   true,
+   null
+  ],
+  [
+   "source_observations",
+   "target_id",
+   "text",
+   true,
+   null
+  ],
+  [
+   "source_observations",
+   "target_kind",
+   "text",
+   true,
+   null
+  ]
+ ],
+ "sequences": [
+  [
+   "observation_evidence_evidence_id_seq",
+   "bigint",
+   1,
+   1
+  ],
+  [
+   "observation_seq",
+   "bigint",
+   1,
+   1
+  ]
+ ],
+ "constraints": [
+  [
+   "observation_chains",
+   "observation_chains_alert_id_not_null",
+   "n",
+   "NOT NULL alert_id"
+  ],
+  [
+   "observation_chains",
+   "observation_chains_binding_id_not_null",
+   "n",
+   "NOT NULL binding_id"
+  ],
+  [
+   "observation_chains",
+   "observation_chains_binding_revision_not_null",
+   "n",
+   "NOT NULL binding_revision"
+  ],
+  [
+   "observation_chains",
+   "observation_chains_created_at_not_null",
+   "n",
+   "NOT NULL created_at"
+  ],
+  [
+   "observation_chains",
+   "observation_chains_instance_id_not_null",
+   "n",
+   "NOT NULL instance_id"
+  ],
+  [
+   "observation_chains",
+   "observation_chains_pkey",
+   "p",
+   "PRIMARY KEY (instance_id, target_kind, target_id, alert_id, binding_id, binding_revision)"
+  ],
+  [
+   "observation_chains",
+   "observation_chains_target_id_not_null",
+   "n",
+   "NOT NULL target_id"
+  ],
+  [
+   "observation_chains",
+   "observation_chains_target_kind_not_null",
+   "n",
+   "NOT NULL target_kind"
+  ],
+  [
+   "observation_completions",
+   "observation_completions_input_sha256_check",
+   "c",
+   "CHECK ((input_sha256 ~ '^[0-9a-f]{64}$'::text))"
+  ],
+  [
+   "observation_completions",
+   "observation_completions_input_sha256_not_null",
+   "n",
+   "NOT NULL input_sha256"
+  ],
+  [
+   "observation_completions",
+   "observation_completions_obs_id_fkey",
+   "f",
+   "FOREIGN KEY (obs_id) REFERENCES voalack.observation_reads(obs_id)"
+  ],
+  [
+   "observation_completions",
+   "observation_completions_obs_id_not_null",
+   "n",
+   "NOT NULL obs_id"
+  ],
+  [
+   "observation_completions",
+   "observation_completions_pkey",
+   "p",
+   "PRIMARY KEY (obs_id)"
+  ],
+  [
+   "observation_completions",
+   "observation_completions_recorded_at_not_null",
+   "n",
+   "NOT NULL recorded_at"
+  ],
+  [
+   "observation_completions",
+   "observation_completions_result_check",
+   "c",
+   "CHECK (((result = ANY (ARRAY['stored'::text, 'unchanged'::text, 'superseded'::text])) OR (result ~ '^refused:[a-z_]{1,40}$'::text)))"
+  ],
+  [
+   "observation_completions",
+   "observation_completions_result_not_null",
+   "n",
+   "NOT NULL result"
+  ],
+  [
+   "observation_completions",
+   "observation_completions_state_sha256_check",
+   "c",
+   "CHECK ((state_sha256 ~ '^[0-9a-f]{64}$'::text))"
+  ],
+  [
+   "observation_evidence",
+   "observation_evidence_evidence_id_not_null",
+   "n",
+   "NOT NULL evidence_id"
+  ],
+  [
+   "observation_evidence",
+   "observation_evidence_input_sha256_check",
+   "c",
+   "CHECK ((input_sha256 ~ '^[0-9a-f]{64}$'::text))"
+  ],
+  [
+   "observation_evidence",
+   "observation_evidence_kind_check",
+   "c",
+   "CHECK ((kind = ANY (ARRAY['conflicting_observation'::text, 'bad_summary'::text, 'refused'::text])))"
+  ],
+  [
+   "observation_evidence",
+   "observation_evidence_kind_not_null",
+   "n",
+   "NOT NULL kind"
+  ],
+  [
+   "observation_evidence",
+   "observation_evidence_obs_id_not_null",
+   "n",
+   "NOT NULL obs_id"
+  ],
+  [
+   "observation_evidence",
+   "observation_evidence_pkey",
+   "p",
+   "PRIMARY KEY (evidence_id)"
+  ],
+  [
+   "observation_evidence",
+   "observation_evidence_reason_check",
+   "c",
+   "CHECK ((reason ~ '^[a-z_]{1,40}$'::text))"
+  ],
+  [
+   "observation_evidence",
+   "observation_evidence_recorded_at_not_null",
+   "n",
+   "NOT NULL recorded_at"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_acquired_epoch_not_null",
+   "n",
+   "NOT NULL acquired_epoch"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_acquired_head_sha256_check",
+   "c",
+   "CHECK ((acquired_head_sha256 ~ '^[0-9a-f]{64}$'::text))"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_acquired_head_sha256_not_null",
+   "n",
+   "NOT NULL acquired_head_sha256"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_alert_id_not_null",
+   "n",
+   "NOT NULL alert_id"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_binding_id_not_null",
+   "n",
+   "NOT NULL binding_id"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_binding_revision_not_null",
+   "n",
+   "NOT NULL binding_revision"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_config_revision_not_null",
+   "n",
+   "NOT NULL config_revision"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_credential_ref_not_null",
+   "n",
+   "NOT NULL credential_ref"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_eligible_check",
+   "c",
+   "CHECK ((jsonb_typeof(eligible) = 'array'::text))"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_eligible_not_null",
+   "n",
+   "NOT NULL eligible"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_instance_id_not_null",
+   "n",
+   "NOT NULL instance_id"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_instance_id_target_kind_target_id_alert__fkey",
+   "f",
+   "FOREIGN KEY (instance_id, target_kind, target_id, alert_id, binding_id, binding_revision) REFERENCES voalack.observation_chains(instance_id, target_kind, target_id, alert_id, binding_id, binding_revision)"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_obs_id_not_null",
+   "n",
+   "NOT NULL obs_id"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_pkey",
+   "p",
+   "PRIMARY KEY (obs_id)"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_provider_contract_not_null",
+   "n",
+   "NOT NULL provider_contract"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_reader_generation_not_null",
+   "n",
+   "NOT NULL reader_generation"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_reader_incarnation_not_null",
+   "n",
+   "NOT NULL reader_incarnation"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_reservation_seq_key",
+   "u",
+   "UNIQUE (reservation_seq)"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_reservation_seq_not_null",
+   "n",
+   "NOT NULL reservation_seq"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_reserved_at_not_null",
+   "n",
+   "NOT NULL reserved_at"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_target_id_not_null",
+   "n",
+   "NOT NULL target_id"
+  ],
+  [
+   "observation_reads",
+   "observation_reads_target_kind_not_null",
+   "n",
+   "NOT NULL target_kind"
+  ],
+  [
+   "source_observations",
+   "source_observations_alert_id_not_null",
+   "n",
+   "NOT NULL alert_id"
+  ],
+  [
+   "source_observations",
+   "source_observations_binding_id_not_null",
+   "n",
+   "NOT NULL binding_id"
+  ],
+  [
+   "source_observations",
+   "source_observations_binding_revision_not_null",
+   "n",
+   "NOT NULL binding_revision"
+  ],
+  [
+   "source_observations",
+   "source_observations_classification_not_null",
+   "n",
+   "NOT NULL classification"
+  ],
+  [
+   "source_observations",
+   "source_observations_instance_id_not_null",
+   "n",
+   "NOT NULL instance_id"
+  ],
+  [
+   "source_observations",
+   "source_observations_obs_id_fkey",
+   "f",
+   "FOREIGN KEY (obs_id) REFERENCES voalack.observation_completions(obs_id)"
+  ],
+  [
+   "source_observations",
+   "source_observations_obs_id_not_null",
+   "n",
+   "NOT NULL obs_id"
+  ],
+  [
+   "source_observations",
+   "source_observations_pkey",
+   "p",
+   "PRIMARY KEY (obs_id)"
+  ],
+  [
+   "source_observations",
+   "source_observations_previous_obs_id_fkey",
+   "f",
+   "FOREIGN KEY (previous_obs_id) REFERENCES voalack.source_observations(obs_id)"
+  ],
+  [
+   "source_observations",
+   "source_observations_recorded_at_not_null",
+   "n",
+   "NOT NULL recorded_at"
+  ],
+  [
+   "source_observations",
+   "source_observations_reservation_seq_key",
+   "u",
+   "UNIQUE (reservation_seq)"
+  ],
+  [
+   "source_observations",
+   "source_observations_reservation_seq_not_null",
+   "n",
+   "NOT NULL reservation_seq"
+  ],
+  [
+   "source_observations",
+   "source_observations_state_sha256_check",
+   "c",
+   "CHECK ((state_sha256 ~ '^[0-9a-f]{64}$'::text))"
+  ],
+  [
+   "source_observations",
+   "source_observations_state_sha256_not_null",
+   "n",
+   "NOT NULL state_sha256"
+  ],
+  [
+   "source_observations",
+   "source_observations_summary_check",
+   "c",
+   "CHECK ((octet_length((summary)::text) <= 4096))"
+  ],
+  [
+   "source_observations",
+   "source_observations_summary_not_null",
+   "n",
+   "NOT NULL summary"
+  ],
+  [
+   "source_observations",
+   "source_observations_target_id_not_null",
+   "n",
+   "NOT NULL target_id"
+  ],
+  [
+   "source_observations",
+   "source_observations_target_kind_not_null",
+   "n",
+   "NOT NULL target_kind"
+  ]
+ ],
+ "functions": [
+  [
+   "_observation_class",
+   "s jsonb, r voalack.observation_reads",
+   "voalack_admin",
+   true,
+   "search_path=pg_catalog, voalack, pg_temp"
+  ],
+  [
+   "_observation_invalid",
+   "s jsonb",
+   "voalack_admin",
+   true,
+   "search_path=pg_catalog, voalack, pg_temp"
+  ],
+  [
+   "_observation_lines",
+   "s jsonb",
+   "voalack_admin",
+   true,
+   "search_path=pg_catalog, voalack, pg_temp"
+  ],
+  [
+   "_observation_refusal",
+   "r voalack.observation_reads",
+   "voalack_admin",
+   true,
+   "search_path=pg_catalog, voalack, pg_temp"
+  ],
+  [
+   "_observer_flag_bump",
+   "",
+   "voalack_admin",
+   true,
+   "search_path=pg_catalog, voalack, pg_temp"
+  ],
+  [
+   "_sha256_text",
+   "t text",
+   "voalack_admin",
+   true,
+   "search_path=pg_catalog, voalack, pg_temp"
+  ],
+  [
+   "_utc_micro",
+   "t timestamp with time zone",
+   "voalack_admin",
+   true,
+   "search_path=pg_catalog, voalack, pg_temp"
+  ],
+  [
+   "begin_observation",
+   "p_obs uuid, p_alert text, p_instance text, p_generation bigint, p_incarnation uuid",
+   "voalack_admin",
+   true,
+   "search_path=pg_catalog, voalack, pg_temp"
+  ],
+  [
+   "observation_status",
+   "p_alert text",
+   "voalack_admin",
+   true,
+   "search_path=pg_catalog, voalack, pg_temp"
+  ],
+  [
+   "record_observation",
+   "p_obs uuid, p_instance text, p_generation bigint, p_incarnation uuid, p_summary jsonb, p_started timestamp with time zone, p_completed timestamp with time zone",
+   "voalack_admin",
+   true,
+   "search_path=pg_catalog, voalack, pg_temp"
+  ]
+ ],
+ "triggers": [
+  [
+   "instance_config_observer_bump",
+   "voalack.instance_config",
+   19,
+   "O",
+   "voalack._observer_flag_bump()",
+   true,
+   0
+  ],
+  [
+   "observation_chains_immutable",
+   "voalack.observation_chains",
+   27,
+   "O",
+   "voalack.refuse_change()",
+   true,
+   0
+  ],
+  [
+   "observation_completions_immutable",
+   "voalack.observation_completions",
+   27,
+   "O",
+   "voalack.refuse_change()",
+   true,
+   0
+  ],
+  [
+   "observation_evidence_immutable",
+   "voalack.observation_evidence",
+   27,
+   "O",
+   "voalack.refuse_change()",
+   true,
+   0
+  ],
+  [
+   "observation_reads_immutable",
+   "voalack.observation_reads",
+   27,
+   "O",
+   "voalack.refuse_change()",
+   true,
+   0
+  ],
+  [
+   "source_observations_immutable",
+   "voalack.source_observations",
+   27,
+   "O",
+   "voalack.refuse_change()",
+   true,
+   0
+  ]
+ ],
+ "acls": [
+  [
+   "function",
+   "_observation_class(s jsonb, r voalack.observation_reads)",
+   "voalack_admin=X/voalack_admin"
+  ],
+  [
+   "function",
+   "_observation_invalid(s jsonb)",
+   "voalack_admin=X/voalack_admin"
+  ],
+  [
+   "function",
+   "_observation_lines(s jsonb)",
+   "voalack_admin=X/voalack_admin"
+  ],
+  [
+   "function",
+   "_observation_refusal(r voalack.observation_reads)",
+   "voalack_admin=X/voalack_admin"
+  ],
+  [
+   "function",
+   "_observer_flag_bump()",
+   "voalack_admin=X/voalack_admin"
+  ],
+  [
+   "function",
+   "_sha256_text(t text)",
+   "voalack_admin=X/voalack_admin"
+  ],
+  [
+   "function",
+   "_utc_micro(t timestamp with time zone)",
+   "voalack_admin=X/voalack_admin"
+  ],
+  [
+   "function",
+   "begin_observation(p_obs uuid, p_alert text, p_instance text, p_generation bigint, p_incarnation uuid)",
+   "voalack_admin=X/voalack_admin,voalack_sender=X/voalack_admin"
+  ],
+  [
+   "function",
+   "observation_status(p_alert text)",
+   "voalack_admin=X/voalack_admin"
+  ],
+  [
+   "function",
+   "record_observation(p_obs uuid, p_instance text, p_generation bigint, p_incarnation uuid, p_summary jsonb, p_started timestamp with time zone, p_completed timestamp with time zone)",
+   "voalack_admin=X/voalack_admin,voalack_sender=X/voalack_admin"
+  ],
+  [
+   "relation",
+   "observation_chains",
+   "voalack_admin=arwdDxtm/voalack_admin"
+  ],
+  [
+   "relation",
+   "observation_completions",
+   "voalack_admin=arwdDxtm/voalack_admin"
+  ],
+  [
+   "relation",
+   "observation_evidence",
+   "voalack_admin=arwdDxtm/voalack_admin"
+  ],
+  [
+   "relation",
+   "observation_evidence_evidence_id_seq",
+   "voalack_admin=rwU/voalack_admin"
+  ],
+  [
+   "relation",
+   "observation_reads",
+   "voalack_admin=arwdDxtm/voalack_admin"
+  ],
+  [
+   "relation",
+   "observation_seq",
+   "voalack_admin=rwU/voalack_admin"
+  ],
+  [
+   "relation",
+   "source_observations",
+   "voalack_admin=arwdDxtm/voalack_admin"
+  ]
+ ]
+}

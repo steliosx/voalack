@@ -1,0 +1,31 @@
+# Forgehold minimal smoke: checks that the dispatched commit is checked out (HEAD == GITHUB_SHA) and prints two
+# FH_SMOKE markers; no build. It is not by itself evidence of App provenance, isolation, admission or cleanup.
+# Dispatch only (the Forgehold queue sends exactly one dispatch); pushing this file starts nothing.
+# Copy this file byte-for-byte; do not edit it (the queue pins its sha256).
+name: forgehold-smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: forgehold-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: [self-hosted, Linux, X64, forgehold]
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - name: smoke
+        run: |
+          set -eu
+          c="$(git rev-parse HEAD)"
+          test "$c" = "$GITHUB_SHA"
+          printf 'FH_SMOKE {"repo":"%s","stage":"checkout","result":"PASS","commit":"%s"}\n' "$GITHUB_REPOSITORY" "$c"
+          printf 'FH_SMOKE {"repo":"%s","stage":"done","result":"PASS"}\n' "$GITHUB_REPOSITORY"

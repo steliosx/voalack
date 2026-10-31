@@ -1,0 +1,7 @@
+alerta-ack-core
+Copyright 2026 Voalack contributors
+
+Portions are derived from Zabalack (Zab-al-ack contributors), licensed under the
+Apache License, Version 2.0: canonical encoding, domain-separated HMAC and field
+validators from src/zabalack/crypto.py at commit
+494768d8c41c230a124b7c748ebaec10e7d4b6ad (blob 05203f738b4a4e649992409b81f5244f08f7acd1).

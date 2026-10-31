@@ -1,0 +1,10 @@
+same         alerta_veeam_one/__init__.py
+same         alerta_veeam_one/__main__.py
+DIFFERS      alerta_veeam_one/core.py
+same         alerta_veeam_one/plugin.py
+same         alerta_veeam_one_ack_lab-0.1.0.dist-info/METADATA
+DIFFERS      alerta_veeam_one_ack_lab-0.1.0.dist-info/RECORD
+same         alerta_veeam_one_ack_lab-0.1.0.dist-info/WHEEL
+same         alerta_veeam_one_ack_lab-0.1.0.dist-info/entry_points.txt
+same         alerta_veeam_one_ack_lab-0.1.0.dist-info/top_level.txt
+members: 9, differing: 2

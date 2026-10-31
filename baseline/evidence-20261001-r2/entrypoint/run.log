@@ -1,0 +1,165 @@
++ echo == platform
+== platform
++ uname -a
+Linux vm-16502732 6.12.95 #1 SMP PREEMPT_DYNAMIC Mon Jun  1 16:28:39 CEST 2026 x86_64 GNU/Linux
++ head -3 /etc/os-release
+PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+NAME="Debian GNU/Linux"
+VERSION_ID="12"
++ python3 --version
+Python 3.12.14
++ echo fault injection: entrypoint
+fault injection: entrypoint
++ command -v openssl
++ openssl version
+OpenSSL 3.0.20 7 Apr 2026 (Library: OpenSSL 3.0.20 7 Apr 2026)
++ echo == copy source (inputs stay read-only)
+== copy source (inputs stay read-only)
++ cp -a /src /work
++ cd /work
++ sha256sum -c SHA256SUMS.txt
+README.md: OK
+VALIDATION.md: OK
+config/veeam-one-ack.example.json: OK
+dist/alerta_veeam_one_ack_lab-0.1.0-py3-none-any.whl: OK
+pyproject.toml: OK
+src/alerta_veeam_one/__init__.py: OK
+src/alerta_veeam_one/__main__.py: OK
+src/alerta_veeam_one/core.py: OK
+src/alerta_veeam_one/plugin.py: OK
+test-results.xml: OK
+tests/test_core.py: OK
+tests/test_plugin.py: OK
++ [ entrypoint = wheel ]
++ echo == environment
+== environment
++ python3 -m venv /venv
++ . /venv/bin/activate
++ deactivate nondestructive
++ [ -n  ]
++ [ -n  ]
++ hash -r
++ [ -n  ]
++ unset VIRTUAL_ENV
++ unset VIRTUAL_ENV_PROMPT
++ [ ! nondestructive = nondestructive ]
++ uname
++ export VIRTUAL_ENV=/venv
++ _OLD_VIRTUAL_PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
++ PATH=/venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
++ export PATH
++ VIRTUAL_ENV_PROMPT=(venv) 
++ export VIRTUAL_ENV_PROMPT
++ [ -n  ]
++ [ -z  ]
++ _OLD_VIRTUAL_PS1=# 
++ PS1=((venv) ) # 
++ export PS1
++ hash -r
++ pip install -q --upgrade pip
++ pip install -q alerta-server==9.1.0 pytest==9.1.1 build
++ pip freeze
++ echo == build wheel from source
+== build wheel from source
++ python -m build --wheel --outdir /out/dist /work
+* Creating isolated environment: venv+pip...
+* Installing packages in isolated environment:
+  - setuptools>=68
+* Getting build dependencies for wheel...
+running egg_info
+creating src/alerta_veeam_one_ack_lab.egg-info
+writing src/alerta_veeam_one_ack_lab.egg-info/PKG-INFO
+writing dependency_links to src/alerta_veeam_one_ack_lab.egg-info/dependency_links.txt
+writing entry points to src/alerta_veeam_one_ack_lab.egg-info/entry_points.txt
+writing top-level names to src/alerta_veeam_one_ack_lab.egg-info/top_level.txt
+writing manifest file 'src/alerta_veeam_one_ack_lab.egg-info/SOURCES.txt'
+reading manifest file 'src/alerta_veeam_one_ack_lab.egg-info/SOURCES.txt'
+writing manifest file 'src/alerta_veeam_one_ack_lab.egg-info/SOURCES.txt'
+* Installed build dependency versions:
+  - setuptools==84.0.0
+* Building wheel...
+running bdist_wheel
+running build
+running build_py
+creating build/lib/alerta_veeam_one
+copying src/alerta_veeam_one/__init__.py -> build/lib/alerta_veeam_one
+copying src/alerta_veeam_one/__main__.py -> build/lib/alerta_veeam_one
+copying src/alerta_veeam_one/core.py -> build/lib/alerta_veeam_one
+copying src/alerta_veeam_one/plugin.py -> build/lib/alerta_veeam_one
+running egg_info
+writing src/alerta_veeam_one_ack_lab.egg-info/PKG-INFO
+writing dependency_links to src/alerta_veeam_one_ack_lab.egg-info/dependency_links.txt
+writing entry points to src/alerta_veeam_one_ack_lab.egg-info/entry_points.txt
+writing top-level names to src/alerta_veeam_one_ack_lab.egg-info/top_level.txt
+reading manifest file 'src/alerta_veeam_one_ack_lab.egg-info/SOURCES.txt'
+writing manifest file 'src/alerta_veeam_one_ack_lab.egg-info/SOURCES.txt'
+installing to build/bdist.linux-x86_64/wheel
+running install
+running install_lib
+creating build/bdist.linux-x86_64/wheel
+creating build/bdist.linux-x86_64/wheel/alerta_veeam_one
+copying build/lib/alerta_veeam_one/__init__.py -> build/bdist.linux-x86_64/wheel/./alerta_veeam_one
+copying build/lib/alerta_veeam_one/__main__.py -> build/bdist.linux-x86_64/wheel/./alerta_veeam_one
+copying build/lib/alerta_veeam_one/core.py -> build/bdist.linux-x86_64/wheel/./alerta_veeam_one
+copying build/lib/alerta_veeam_one/plugin.py -> build/bdist.linux-x86_64/wheel/./alerta_veeam_one
+running install_egg_info
+Copying src/alerta_veeam_one_ack_lab.egg-info to build/bdist.linux-x86_64/wheel/./alerta_veeam_one_ack_lab-0.1.0-py3.12.egg-info
+running install_scripts
+creating build/bdist.linux-x86_64/wheel/alerta_veeam_one_ack_lab-0.1.0.dist-info/WHEEL
+creating '/out/dist/.tmp-sefyclkz/alerta_veeam_one_ack_lab-0.1.0-py3-none-any.whl' and adding 'build/bdist.linux-x86_64/wheel' to it
+adding 'alerta_veeam_one/__init__.py'
+adding 'alerta_veeam_one/__main__.py'
+adding 'alerta_veeam_one/core.py'
+adding 'alerta_veeam_one/plugin.py'
+adding 'alerta_veeam_one_ack_lab-0.1.0.dist-info/METADATA'
+adding 'alerta_veeam_one_ack_lab-0.1.0.dist-info/WHEEL'
+adding 'alerta_veeam_one_ack_lab-0.1.0.dist-info/entry_points.txt'
+adding 'alerta_veeam_one_ack_lab-0.1.0.dist-info/top_level.txt'
+adding 'alerta_veeam_one_ack_lab-0.1.0.dist-info/RECORD'
+removing build/bdist.linux-x86_64/wheel
+Successfully built alerta_veeam_one_ack_lab-0.1.0-py3-none-any.whl
++ sha256sum+ cut /out/dist/alerta_veeam_one_ack_lab-0.1.0-py3-none-any.whl
+ -d  -f1
++ stat -c %s /out/dist/alerta_veeam_one_ack_lab-0.1.0-py3-none-any.whl
++ echo ec05a5b9c19f37aa8b1c832a184f59372c6d603dce5339111a9f190abc81eefa  9145  /out/dist/alerta_veeam_one_ack_lab-0.1.0-py3-none-any.whl
++ + cutsha256sum -d  -f1 /work/dist/alerta_veeam_one_ack_lab-0.1.0-py3-none-any.whl
+
++ stat -c %s /work/dist/alerta_veeam_one_ack_lab-0.1.0-py3-none-any.whl
++ echo 2c83798484f0e465e160a55c02869a2515064af337e08b9e265145489b5863c5  9145  /work/dist/alerta_veeam_one_ack_lab-0.1.0-py3-none-any.whl
++ cat /out/wheel-archives.txt
+ec05a5b9c19f37aa8b1c832a184f59372c6d603dce5339111a9f190abc81eefa  9145  /out/dist/alerta_veeam_one_ack_lab-0.1.0-py3-none-any.whl
+2c83798484f0e465e160a55c02869a2515064af337e08b9e265145489b5863c5  9145  /work/dist/alerta_veeam_one_ack_lab-0.1.0-py3-none-any.whl
++ echo == compare rebuilt wheel with shipped wheel (members)
+== compare rebuilt wheel with shipped wheel (members)
++ python -
++ cat /out/wheel-compare.txt
+same         alerta_veeam_one/__init__.py
+same         alerta_veeam_one/__main__.py
+same         alerta_veeam_one/core.py
+same         alerta_veeam_one/plugin.py
+same         alerta_veeam_one_ack_lab-0.1.0.dist-info/METADATA
+same         alerta_veeam_one_ack_lab-0.1.0.dist-info/RECORD
+same         alerta_veeam_one_ack_lab-0.1.0.dist-info/WHEEL
+same         alerta_veeam_one_ack_lab-0.1.0.dist-info/entry_points.txt
+same         alerta_veeam_one_ack_lab-0.1.0.dist-info/top_level.txt
+members: 9, differing: 0
++ echo == install the rebuilt wheel (not editable) and load the entry point
+== install the rebuilt wheel (not editable) and load the entry point
++ pip install -q /out/dist/alerta_veeam_one_ack_lab-0.1.0-py3-none-any.whl
++ pip freeze
++ [ entrypoint = entrypoint ]
++ rm /venv/lib/python3.12/site-packages/alerta_veeam_one/plugin.py
++ cd /tmp
++ python -
+Traceback (most recent call last):
+  File "<stdin>", line 5, in <module>
+  File "/usr/local/lib/python3.12/importlib/metadata/__init__.py", line 205, in load
+    module = import_module(match.group('module'))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'alerta_veeam_one.plugin'
