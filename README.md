@@ -25,7 +25,7 @@ Voalack is being developed for Service Desk, engineering and NOC teams that use 
 | --- | --- |
 | ONE → Alerta | Preserve the existing alarm feed. |
 | Alerta → ONE | Deliver an eligible human acknowledgement with integration identity, verified operator attribution, request time and note. |
-| ONE-origin acknowledgements → Alerta | Outside the current acknowledgement-mirroring scope. Read-only observation may be added later, off by default. |
+| ONE-origin acknowledgements → Alerta | Not mirrored. An implemented, off-by-default observer records typed state only in Voalack's ledger. |
 | Other mutations | Unacknowledgement, resolve/delete, bulk/grouped targets and arbitrary comment synchronisation are outside the current write-back scope. |
 
 The integration service account performs the ONE API action; the comment identifies the requesting Alerta user. A local ACK alone never establishes remote success. [Scope and delivery contract](design/DESIGN.md) · [Agreed amendments](design/DESIGN_AMENDMENTS.md)
@@ -41,19 +41,52 @@ Commit identifiers in this README refer to the private development history; this
 | Original ACK MVP reproduction | 32 tests passed | [Report](baseline/BASELINE_REPORT.md). Rebuilt, installed wheel in isolated Linux with a mocked database boundary; not evidence for the new architecture. |
 | Shared ACK core | Implemented; used by Voalack's signed intents | [Core package](packages/ack-core): canonical encoding, signing profiles, validation and typed outcomes; installed-wheel tests in CI. |
 | Zabalack compatibility experiment | Scoped local evidence | [T02 report](compat/t02/README.md); not merged into Zabalack. |
-| Continuous integration | Implemented | GitHub-hosted runners for the package and launcher tests (read-only token, no secrets, maintainer approval for outside contributors); the full capture suite runs in disposable microVMs ([CI design](docs/CI.md)). |
+| Continuous integration | Implemented; scoped checks | GitHub-hosted runners for package and mocked-launcher tests, with a read-only token and no repository secrets. Outside-contributor approval is a separate repository setting; full capture qualification runs in disposable microVMs ([CI design](docs/CI.md)). |
 | Capture boundary and signed intents (T03b) | Implemented and tested | Real Alerta 9.1.0 and PostgreSQL in the test guest: transaction boundary, authorisation gate, signed intents under a restricted role. [Package notes](packages/voalack/README.md). |
 | Verifier, effect ledger and send path (T04 S1–S3a) | Implemented; fake provider only | One active, lease-fenced verifier claim per capture at a time and at most one promoted effect, one session owner per ONE instance, a one-time dispatch permit, physical-target guards, and retries only after a proven not-sent. Anything possibly sent is held `UNCERTAIN` and never resent. |
 | Reconciliation and settlement (T04 S3b) | Implemented; fake provider only | Read-only reconciliation; automatic settlement only for an attributed read; operator settlement only after containment and quiescence. Nothing returns to `QUEUED`. |
 | Supervised database recovery (T04 S3c) | Implemented; fake provider only | An external recovery record gates provider use. A restored database is adopted with held work, and nothing that may have been sent is sent again. At `32e72d7`: 635 tests passed in a disposable microVM (PostgreSQL 18.6, Alerta 9.1.0), 15 deliberate code mutations each failed their tests, and an independent reviewer re-ran the suite. Limited to an announced, supervised, database-only restore. In a database shared with Alerta, the bare restore command fails; S4 added a shared-database procedure for that earlier layout. With coexistence 3a installed (this release) this recovery refuses: there is no supported restore. |
 | Operator projection (T04 S4) | Implemented; fake provider only | One Alerta note per delivery, settlement and recovery outcome, published in order from a protected record that a restore does not roll back. Display only: no send, settlement, hold release or new intent. At `759e59c`: 718 tests passed in a disposable microVM (PostgreSQL 18.6, Alerta 9.1.0), 41 of 42 deliberate code mutations failed their tests (the remaining one is caught by a separate direct entry-point test), and an independent reviewer re-ran the suite. Also added a supervised restore procedure for the shared layout of that time (before coexistence 3a); with coexistence 3a installed it refuses (see the recovery row above). |
 | Reverse Veeam ONE state (T05a) | Assessed; not mirrored | Acknowledgements made directly in Veeam ONE are not mirrored into Alerta, and neither are unacknowledgements or comments. The [assessment](design/T05_REVERSE_STATE.md) gives the reasons (ordering, occurrence identity, human identity, precedence, loop suppression, scope) and what read-only reconciliation does instead. At `6248653`, which contains the assessment and its tests: 735 tests passed in a disposable microVM (PostgreSQL 18.6, Alerta 9.1.0), 8 deliberate code mutations each failed their tests, and an independent reviewer reviewed the exact commit. The tests show that reading back Voalack's own ACK creates no new action, intent or ACK. Since then, an optional evidence-only observer (T05b) records ONE's state in Voalack's own ledger and never projects it into Alerta (see the [package README](packages/voalack/README.md)). |
+| Ledger-only source observer (T05b) | Implemented; off by default; fake provider only | Records a typed, minimized ONE-state summary in Voalack's own ledger. It cannot ACK, write Alerta notes, settle, release holds or create intent. See [package notes](packages/voalack/README.md#ledger-only-source-observer-t05b-fake-one-provider-only). |
 | Coexistence in one Alerta database (3a S1–S3b) | Implemented; fake provider only | Public-table ownership classes with foreign pass-through, alert lifetimes and ownership protections with their migration, a DDL guard over the protected objects, and supervised containment windows with a journal. A restore of a database that Voalack shares with another product is not supported in this release, and the planned coexistence restore (3a S3c) is not part of it; the T04 S3c recovery above describes Voalack-only and pre-3a layouts at their historical commits, and with coexistence 3a installed it refuses. |
 | Live operation | Not qualified | No real Veeam ONE, deployed Duo/OIDC, Windows feed or target-site installed deployment has been exercised (the lab tests use installed wheels in a disposable guest). Automatic live writes remain disabled while the enablement holds are unresolved. |
 
+### Public snapshot checkpoint — 1 November 2026
+
+This public repository begins at
+[`592ce769`](https://github.com/steliosx/voalack/tree/592ce769ce1c309d93e1ed34e3872c24ea8ebe5e).
+Main and `vo/integration` match that snapshot. Earlier commit identifiers
+below refer to private development history; they are historical context,
+not commits assumed available in this repository. The snapshot does not
+establish new qualification of the inherited product.
+
+[Exact-snapshot CI 41330724718](https://github.com/steliosx/voalack/actions/runs/41330724718)
+passed **48 installed ACK-core tests, 87 installed envelope tests and 25
+mocked-launcher tests** (160 total). It does not run the PostgreSQL capture,
+coexistence or recovery suites. Original exact-tree independent guest
+qualification records were not inspected in this presentation review.
+
+The current source keeps the early alerts-table lock in schema application.
+Coexistence 3a S1–S3b is present; with those protections installed the
+supervised restore refuses. There is **no supported coexistence-3a restore**
+and no S3c acceptance implied by the earlier historical recovery results.
+
+Unmerged [PR #1](https://github.com/steliosx/voalack/pull/1), head `8b06cad6`,
+removes the dispatch-only Forgehold smoke workflow. Its narrow CI passes,
+but the stated outside-contributor approval setting and designated exact-head
+review remain separate merge requirements. The current main still contains
+that workflow; the proposed removal is not described as already merged.
+[CI documentation](docs/CI.md) describes hosted jobs under the later owner
+direction, while the [charter](docs/CHARTER.md) retains the earlier microVM
+CI wording; maintainers need to reconcile those records.
+
+No release, live ONE validation, occurrence/conditional-write qualification
+or target-site installed acceptance is established by this snapshot or CI.
+
 ## Architecture
 
-Implemented against a fake provider; live use is not qualified. The transaction boundary saves an eligible local Alerta ACK and its signed candidate together. A separate verifier checks authority and the exact approved binding before any remote action. One session owner per ONE instance makes a durable attempt before the send, and read-back evidence determines the recorded outcome. An external recovery record keeps a restored database from resending possibly finished work. A separate projector shows each recorded outcome as an Alerta note; it has no delivery capability.
+Implemented against a fake provider; live use is not qualified. The transaction boundary saves an eligible local Alerta ACK and its signed candidate together. A separate verifier checks authority and the exact approved binding before any remote action. One session owner per ONE instance makes a durable attempt before the send, and read-back evidence determines the recorded outcome. An external recovery record keeps a restored database from resending possibly finished work. A separate projector shows each recorded outcome as an Alerta note; it has no delivery capability. An optional, off-by-default observer records typed source-state evidence in its own ledger without creating an ACK, Alerta note, settlement or intent.
 
 ![Planned Voalack acknowledgement flow](docs/assets/acknowledgement-flow.svg)
 
