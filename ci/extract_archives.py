@@ -81,6 +81,9 @@ def extract(zf, label, out_dir, depth, budget, report):
     for info in zf.infolist():
         member = f"{label}!{info.filename}"
         mode = info.external_attr >> 16
+        budget.members += 1                     # every entry counts, directories included
+        if budget.members > MAX_MEMBERS:
+            raise Refused(f"more than {MAX_MEMBERS} members in all archives")
         if stat.S_ISLNK(mode):
             raise Refused(f"symlink member: {member}")
         if info.is_dir():
@@ -89,9 +92,6 @@ def extract(zf, label, out_dir, depth, budget, report):
         if name in seen:
             raise Refused(f"duplicate member: {member}")
         seen.add(name)
-        budget.members += 1
-        if budget.members > MAX_MEMBERS:
-            raise Refused(f"more than {MAX_MEMBERS} members in all archives")
         data = read_bounded(zf, info, member)
         budget.total += len(data)
         if budget.total > MAX_TOTAL_BYTES:
