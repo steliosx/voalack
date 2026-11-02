@@ -36,7 +36,9 @@ scans with the default rule set (`.gitleaks.toml` keeps every default rule):
 The extractor writes members as plain files and never runs, imports or installs them. It opens an archive inside an
 archive one level deep (an input zip carries a wheel), and refuses unsafe names, symlinks, duplicates, more than
 5 MiB per member, 50 MiB or 2,000 members in all, or deeper nesting. Every scan runs; the job fails if any scan finds
-something, fails, or leaves no report. Exceptions are added only for values a scan actually reported, each bound to
+something, fails, or leaves no report, and also if the archive scan covers zero bytes although members were
+extracted. The default path allowlist applies to archive members as it does to the tree (so, for example, a wheel's
+`*.dist-info/` files are skipped). Exceptions are added only for values a scan actually reported, each bound to
 one exact path and one exact value.
 
 Not covered: archive versions that exist only in history, binary formats other than zip and wheel (images included),

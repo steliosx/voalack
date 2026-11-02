@@ -31,7 +31,14 @@ tree=0
 "$GITLEAKS" dir "$SRC" $COMMON --report-path "$OUT/tree.json" || tree=$?
 archives=0
 if [ "$extract" -eq 0 ]; then
-  (cd "$WORK/archives" && "$GITLEAKS" dir . $COMMON --report-path "$OUT/archives.json") || archives=$?
+  (cd "$WORK/archives" && "$GITLEAKS" dir . $COMMON --report-path "$OUT/archives.json") 2> "$OUT/archives-scan.log" \
+    || archives=$?
+  cat "$OUT/archives-scan.log"
+  # Guard against silent skips: members were extracted, so a scan of zero bytes means the paths were allowlisted away.
+  if [ "$archives" = 0 ] && python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["members"] else 1)' \
+       "$OUT/archives-manifest.json" && grep -q 'scanned ~0 bytes' "$OUT/archives-scan.log"; then
+    archives=empty-scan
+  fi
 else
   archives=skipped
 fi

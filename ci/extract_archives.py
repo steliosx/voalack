@@ -10,7 +10,9 @@ Usage: python3 -I ci/extract_archives.py ROOT OUT --report REPORT.json [--manife
 ROOT is the repository checkout. Without --manifest the archives are the tracked *.zip and *.whl files
 (git ls-files); with --manifest they are the paths listed in FILE, one per line, relative to ROOT (used by the
 trial fixtures, whose planted archives are not tracked). OUT must not exist. Each member is written to
-OUT/<archive path>/<member>, and a nested archive's members to OUT/<archive path>/<nested member>!/<member>.
+OUT/<archive path>.d/<member>, and a nested archive's members to OUT/<archive path>.d/<nested member>.d/<member>.
+The ".d" suffix matters: the default gitleaks path allowlist skips anything ending in ".zip", including a directory,
+so a directory named after the archive would silently remove every member from the scan.
 """
 
 import argparse
@@ -107,7 +109,7 @@ def extract(zf, label, out_dir, depth, budget, report):
                 inner = zipfile.ZipFile(BytesIO(data))
             except zipfile.BadZipFile as exc:
                 raise Refused(f"nested archive not readable: {member}: {exc}")
-            extract(inner, f"{label}!{name}", target + "!", depth + 1, budget, report)
+            extract(inner, f"{label}!{name}", target + ".d", depth + 1, budget, report)
 
 
 def archives_from_git(root):
@@ -136,7 +138,7 @@ def main(argv):
         for rel in paths:
             rel_clean = safe_name(rel)
             with zipfile.ZipFile(os.path.join(args.root, *rel_clean.split("/"))) as zf:
-                extract(zf, rel_clean, os.path.join(args.out, *rel_clean.split("/")), 1, budget, report)
+                extract(zf, rel_clean, os.path.join(args.out, *rel_clean.split("/")) + ".d", 1, budget, report)
     except (Refused, zipfile.BadZipFile, OSError) as exc:
         status["refused"] = str(exc)
     with open(args.report, "w", encoding="utf-8") as fh:
