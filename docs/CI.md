@@ -4,13 +4,14 @@ CI is a **check, not an approval**: `main` still moves only after VO-ASTRA has r
 
 ## Hosted CI (every push and pull request)
 
-Since 2026-10-30 (owner direction), the three CI jobs run on GitHub-hosted `ubuntu-24.04` runners:
+Since 2026-10-30 (owner direction), the CI jobs run on GitHub-hosted `ubuntu-24.04` runners:
 
 | Job | Script | Notes |
 |---|---|---|
 | `core` | `ci/run_core_tests.sh` | Builds the ack-core wheel and runs its tests against the installed wheel |
 | `envelope` | `ci/run_envelope_tests.sh` | Builds the wheels and runs the signed-envelope tests against the installed `voalack` wheel |
 | `launcher` | `ci/run_launcher_tests.sh` | Launcher polling, cleanup verification and failure paths, against fake `gh` and `smolvm` |
+| `secrets` | `ci/run_secret_scan.sh` | Pinned gitleaks 8.24.3 over the history, the current tree and the members of the current archives (see Secret scan) |
 
 - **Fork pull requests: a guard, not a boundary.** The first step of every job fails a pull request from a fork
   before checkout. A fork pull request can edit this workflow, guard included, so the guard only stops an unmodified
@@ -22,6 +23,24 @@ Since 2026-10-30 (owner direction), the three CI jobs run on GitHub-hosted `ubun
 - **No self-hosted label in a push or pull-request workflow.** The only self-hosted workflow is the dispatch-only
   `forgehold-smoke`, which nothing triggers from a push or pull request. A pull request that adds a self-hosted job
   still needs the maintainer approval above before anything runs.
+
+## Secret scan
+
+The `secrets` job downloads gitleaks 8.24.3, checks its SHA-256 against the release checksum file, and runs three
+scans with the default rule set (`.gitleaks.toml` keeps every default rule):
+
+1. the text of every reachable commit (`history.json`);
+2. the current tree, archives as stored bytes (`tree.json`);
+3. the members of the current `*.zip` and `*.whl` files, extracted by `ci/extract_archives.py` (`archives.json`).
+
+The extractor writes members as plain files and never runs, imports or installs them. It opens an archive inside an
+archive one level deep (an input zip carries a wheel), and refuses unsafe names, symlinks, duplicates, more than
+5 MiB per member, 50 MiB or 2,000 members in all, or deeper nesting. Every scan runs; the job fails if any scan finds
+something, fails, or leaves no report. Exceptions are added only for values a scan actually reported, each bound to
+one exact path and one exact value.
+
+Not covered: archive versions that exist only in history, binary formats other than zip and wheel (images included),
+and anything the gitleaks rules do not describe.
 
 ## Disposable microVM runs (local)
 
