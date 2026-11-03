@@ -117,3 +117,50 @@ jobs:
           name: launcher-evidence-${{ github.sha }}
           path: ${{ runner.temp }}/evidence
           retention-days: 90
+
+  secrets:
+    name: secret scan (gitleaks 8.24.3; history, tree, archive members)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Refuse a fork pull request before checkout
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo "fork pull request: refused by this workflow; a maintainer reruns it from a branch after review" >&2
+          exit 1
+      - name: Check out the exact commit with its full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Install the pinned gitleaks
+        # Official v8.24.3 release (tag ee6b3835, commit 107a41827bb6698dbbff756b2300537774a1d84c); the hash is the
+        # gitleaks_8.24.3_checksums.txt entry for the Linux x64 tarball.
+        run: |
+          test "$(uname -m)" = x86_64
+          mkdir "$RUNNER_TEMP/gitleaks"
+          curl --fail --location --proto '=https' --tlsv1.2 \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz \
+            --output "$RUNNER_TEMP/gitleaks/archive.tar.gz"
+          printf '%s  %s\n' 9991e0b2903da4c8f6122b5c3186448b927a5da4deef1fe45271c3793f4ee29c "$RUNNER_TEMP/gitleaks/archive.tar.gz" | sha256sum --check --strict
+          tar --extract --gzip --file "$RUNNER_TEMP/gitleaks/archive.tar.gz" --directory "$RUNNER_TEMP/gitleaks" --no-same-owner gitleaks
+          "$RUNNER_TEMP/gitleaks/gitleaks" version | grep -x 8.24.3
+      - name: Scan history, tree and archive members
+        env:
+          SRC: ${{ github.workspace }}
+          OUT: ${{ runner.temp }}/evidence
+          WORK: ${{ runner.temp }}/work
+          GITLEAKS: ${{ runner.temp }}/gitleaks/gitleaks
+        run: sh ci/run_secret_scan.sh
+      - name: Show the scan summary
+        if: always()
+        run: |
+          echo "scanned commit: $GITHUB_SHA (event: $GITHUB_EVENT_NAME)"
+          cat "$RUNNER_TEMP/evidence/scan-status.txt" 2>/dev/null || echo "no scan status recorded"
+      - name: Keep the reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: secrets-evidence-${{ github.sha }}
+          path: ${{ runner.temp }}/evidence
+          retention-days: 3

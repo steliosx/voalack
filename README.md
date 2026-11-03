@@ -52,34 +52,47 @@ Commit identifiers in this README refer to the private development history; this
 | Coexistence in one Alerta database (3a S1–S3b) | Implemented; fake provider only | Public-table ownership classes with foreign pass-through, alert lifetimes and ownership protections with their migration, a DDL guard over the protected objects, and supervised containment windows with a journal. A restore of a database that Voalack shares with another product is not supported in this release, and the planned coexistence restore (3a S3c) is not part of it; the T04 S3c recovery above describes Voalack-only and pre-3a layouts at their historical commits, and with coexistence 3a installed it refuses. |
 | Live operation | Not qualified | No real Veeam ONE, deployed Duo/OIDC, Windows feed or target-site installed deployment has been exercised (the lab tests use installed wheels in a disposable guest). Automatic live writes remain disabled while the enablement holds are unresolved. |
 
-### Public snapshot checkpoint — 1 November 2026
+### Public repository checkpoint — 2 November 2026
 
 This public repository begins at
 [`592ce769`](https://github.com/steliosx/voalack/tree/592ce769ce1c309d93e1ed34e3872c24ea8ebe5e).
-Main and `vo/integration` match that snapshot. Earlier commit identifiers
-below refer to private development history; they are historical context,
-not commits assumed available in this repository. The snapshot does not
-establish new qualification of the inherited product.
+Current main and `vo/integration` match
+[`3ca8bb6b`](https://github.com/steliosx/voalack/commit/3ca8bb6bd3cb5e86023d65540b85fee011e6c28d).
+Earlier identifiers below refer to private development history, not commits
+assumed available in this repository. The snapshot does not establish new
+qualification of the inherited product.
 
-[Exact-snapshot CI 41330724718](https://github.com/steliosx/voalack/actions/runs/41330724718)
+Merged [PR #3](https://github.com/steliosx/voalack/pull/3) adds pinned gitleaks
+8.24.3 checks over reachable history, current tree and bounded zip/wheel members.
+The archive extraction path correction prevents the scanner's default zip-path
+allowlist from silently skipping extracted contents. The guard fails when members
+exist but the archive scan reports zero bytes. It does not cover archive versions
+found only in history, every binary format or secrets absent from the rule set.
+See [CI coverage](docs/CI.md).
+
+[Exact-main CI 41501760593](https://github.com/steliosx/voalack/actions/runs/41501760593)
 passed **48 installed ACK-core tests, 87 installed envelope tests and 25
-mocked-launcher tests** (160 total). It does not run the PostgreSQL capture,
-coexistence or recovery suites. Original exact-tree independent guest
-qualification records were not inspected in this presentation review.
+mocked-launcher tests** (160 total), plus the separate secrets job. Its extraction
+and three scan status codes were zero with no report missing. These are scoped
+checks, not a separate whole-repository security review. Original VO-ASTRA
+exact-head signed review and independent trial records were not available to this
+presentation review; a shared account and green CI do not establish that review.
 
-The current source keeps the early alerts-table lock in schema application.
-Coexistence 3a S1–S3b is present; with those protections installed the
-supervised restore refuses. There is **no supported coexistence-3a restore**
-and no S3c acceptance implied by the earlier historical recovery results.
+The source keeps the early alerts-table lock in schema application.
+Coexistence 3a S1–S3b is present; with those protections installed the supervised
+restore refuses. There is **no supported coexistence-3a restore** and no S3c
+acceptance implied by historical recovery results. Hosted CI does not execute the
+PostgreSQL capture, coexistence, observer, sender or recovery qualification suites.
 
 Unmerged [PR #1](https://github.com/steliosx/voalack/pull/1), head `8b06cad6`,
-removes the dispatch-only Forgehold smoke workflow. Its narrow CI passes,
-but the stated outside-contributor approval setting and designated exact-head
-review remain separate merge requirements. The current main still contains
-that workflow; the proposed removal is not described as already merged.
-[CI documentation](docs/CI.md) describes hosted jobs under the later owner
-direction, while the [charter](docs/CHARTER.md) retains the earlier microVM
-CI wording; maintainers need to reconcile those records.
+removes the dispatch-only Forgehold smoke workflow. Current main still contains
+it. The PR must reconcile the newer CI documentation before merge; its stated
+outside-contributor approval setting cannot be verified by this connector and
+remains separate from designated exact-head review. Forgehold records that the
+new public repository is disconnected from its lane.
+The [CI documentation](docs/CI.md) describes hosted jobs under the later owner
+direction, while the [charter](docs/CHARTER.md) retains the earlier microVM CI
+wording; maintainers need to reconcile those records.
 
 No release, live ONE validation, occurrence/conditional-write qualification
 or target-site installed acceptance is established by this snapshot or CI.

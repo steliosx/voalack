@@ -1,0 +1,5 @@
+# Secret-scan configuration used by every scan in ci/run_secret_scan.sh: the default gitleaks 8.24.3 rules, all kept.
+# An exception is added only for a value a scan actually reported, as a [[rules.allowlists]] entry on that rule with
+# condition = "AND" over one exact path and one exact value, never a path alone or a value alone, each with a reason.
+[extend]
+useDefault = true
