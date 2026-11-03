@@ -16,13 +16,13 @@ Since 2026-10-30 (owner direction), the CI jobs run on GitHub-hosted `ubuntu-24.
 - **Fork pull requests: a guard, not a boundary.** The first step of every job fails a pull request from a fork
   before checkout. A fork pull request can edit this workflow, guard included, so the guard only stops an unmodified
   workflow. The boundary is elsewhere: jobs run on GitHub's disposable hosted runners (never a maintainer machine),
-  the token is read-only, no repository secrets are used, and the repository requires a maintainer's approval
-  before workflows run for outside contributors (an owner setting, to be confirmed before the repository is public).
+  the token is read-only, no repository secrets are used, and a repository setting requires a maintainer's
+  approval before workflows run for a pull request from an outside contributor.
 - **Least privilege.** The workflow token is read-only (`contents: read`), checkouts do not persist credentials, and
   every action is pinned to a full commit SHA.
-- **No self-hosted label in a push or pull-request workflow.** The only self-hosted workflow is the dispatch-only
-  `forgehold-smoke`, which nothing triggers from a push or pull request. A pull request that adds a self-hosted job
-  still needs the maintainer approval above before anything runs.
+- **No self-hosted workflow.** Every workflow in this repository runs on GitHub-hosted runners; none uses a
+  self-hosted label, and no self-hosted runner is registered for the repository. A pull request that adds
+  a self-hosted job still needs the maintainer approval above before anything runs.
 
 ## Secret scan
 
