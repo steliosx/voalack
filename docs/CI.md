@@ -2,7 +2,7 @@
 
 CI is a **check, not an approval**: `main` still moves only after VO-ASTRA has reviewed the exact head.
 
-## Hosted CI (every push and pull request)
+## Hosted CI (pushes to main and vo/**; pull requests to main)
 
 Since 2026-10-30 (owner direction), the CI jobs run on GitHub-hosted `ubuntu-24.04` runners:
 
@@ -16,13 +16,16 @@ Since 2026-10-30 (owner direction), the CI jobs run on GitHub-hosted `ubuntu-24.
 - **Fork pull requests: a guard, not a boundary.** The first step of every job fails a pull request from a fork
   before checkout. A fork pull request can edit this workflow, guard included, so the guard only stops an unmodified
   workflow. The boundary is elsewhere: jobs run on GitHub's disposable hosted runners (never a maintainer machine),
-  the token is read-only, no repository secrets are used, and the repository requires a maintainer's approval
-  before workflows run for outside contributors (an owner setting, to be confirmed before the repository is public).
+  the token is read-only and no repository secrets are used. On 6 November 2026 the repository's
+  outside-contributor approval policy was independently read as `first_time_contributors`, not
+  `all_external_contributors`. Do not assume every outside contributor's workflow awaits approval.
+  This mutable repository setting is separate from the source guard and exact-head code review.
 - **Least privilege.** The workflow token is read-only (`contents: read`), checkouts do not persist credentials, and
   every action is pinned to a full commit SHA.
-- **No self-hosted label in a push or pull-request workflow.** The only self-hosted workflow is the dispatch-only
-  `forgehold-smoke`, which nothing triggers from a push or pull request. A pull request that adds a self-hosted job
-  still needs the maintainer approval above before anything runs.
+- **No self-hosted workflow.** The dispatch-only `forgehold-smoke` workflow has been removed from this
+  candidate. All remaining workflows target hosted runners. Keep maintainer-host and shared-lane runners
+  disconnected from this public repository; source guards do not safely isolate an attached runner from
+  contributor-controlled workflows. Adding a runner or dispatch route requires its own review and authority.
 
 ## Secret scan
 
@@ -88,7 +91,8 @@ launcher (ci/launcher/launch.sh, on demand) ── sees the queued job
   and launches nothing more until `launch.sh --cleanup` succeeds.
 - **A failed GitHub query is not "idle".** If the queue query fails or returns something
   malformed, the launcher exits with status 2 without minting a token or creating a VM.
-- **Actions.** The repository allows only GitHub-owned actions, pinned to full commit SHAs.
+- **Actions.** The checked-in workflows use GitHub-owned actions pinned to full commit SHAs.
+  This describes the source, not an assertion that the repository's mutable allowed-actions setting enforces it.
 
 **Rejected:** a runner on the host itself. It would execute workflow content from any pushed
 branch with the host's access.
@@ -113,7 +117,8 @@ and 100 jobs per run.
 ## Reading results
 
 - A job that stayed queued, was cancelled or never started is **not** validation.
-- Evidence is uploaded as a run artifact (kept 90 days). Anything a review relies on is also
+- Test evidence is uploaded as run artifacts kept for 90 days; secrets reports are kept for 3 days.
+  Anything a review relies on is also
   recorded with the project, because GitHub expires logs and artifacts.
 - Reviewers can inspect runs directly through the GitHub API, independently of the lead's
   reports.

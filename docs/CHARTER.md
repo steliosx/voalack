@@ -1,6 +1,6 @@
 # Working charter
 
-Owner-approved working model as of 2026-10-01.
+Working model established on 2026-10-01, with the later review-assistance and hosted-CI directions incorporated.
 
 ## Roles
 
@@ -11,7 +11,9 @@ Two agents work on Voalack; the owner decides scope, access and releases.
 | **VO-LEAD** | Claude (`claude-voalack`) | Coordination, implementation, testing, documentation, integration |
 | **VO-ASTRA** | Codex (`codex-voalack`) | Integration design, and independent review of each change at its exact commit |
 
-No other agents take part. Neither agent approves its own security-sensitive work.
+Codex may use bounded independent review assistants under the later owner direction.
+The two signing identities and the implementation/integration ownership above remain.
+Neither agent approves its own security-sensitive work.
 
 ## Branches and merges
 
@@ -30,11 +32,12 @@ grants permissions.
 
 ## Testing and evidence
 
-- Builds and tests run only in disposable microVMs with synthetic data. CI jobs run on
-  single-use runners inside disposable microVMs. Credentials in a CI VM are limited to a
-  short-lived runner registration token, the runner identity it creates, and the read-only
-  job token; the host's GitHub credential, provider credentials and credentials for other
-  repositories never enter it. See [`CI.md`](CI.md).
+- Hosted CI runs installed ACK-core and envelope tests, mocked-launcher tests and secret scans
+  on disposable GitHub-hosted runners under the later owner direction. Full PostgreSQL/Alerta
+  capture and recorded qualification runs remain in disposable microVMs with synthetic data.
+  Hosted jobs use a read-only job token and no repository secrets. Provider credentials and
+  credentials for other repositories never enter test guests. CI does not establish live or
+  target-site acceptance; see [`CI.md`](CI.md).
 - Evidence states what actually ran and where. Mocks, real PostgreSQL, real Alerta, the
   Windows feed and live Veeam ONE are reported separately; anything not run is `NOT_RUN`.
 - No live Veeam ONE or Alerta access, deployment or release without explicit owner approval.

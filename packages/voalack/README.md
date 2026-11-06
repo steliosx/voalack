@@ -219,12 +219,19 @@ unrecognised, so eligible ACKs are refused.
 
 1. Start Alerta once (or apply its schema as the runtime login) so its tables exist. Until step 3
    is complete, do not serve requests through the Voalack factory.
-2. As a superuser, apply `voalack/sql/schema.sql` (`voalack.schema.apply`); it creates the
-   protected schema owned by `voalack_admin`, the capture trigger, the owner functions and the
-   runtime grants.
-3. As an administrator: insert immutable `binding_revisions`, the `bindings` pointer and a
-   `binding_generations` row per binding; insert `authorization_policy` grants (user ID →
-   customer) and the active `authorization_policy_active` revision.
+2. As the installation administrator, use `voalack.schema.apply(conn)` with the required
+   superuser connection. Do not execute `sql/schema.sql` alone: it is only one component of
+   the current installation. `schema.apply` verifies the packaged expectation hashes, takes
+   the early alerts-table lock, and applies the ordered protector, admission, schema and
+   post-protection SQL in one transaction. It installs the protected schema, capture trigger,
+   owner functions and runtime grants; a refused installation must not be bypassed.
+3. As an administrator: create the immutable `binding_revisions` row with the alert's current
+   open `alert_lifetime_id`, then enroll it through
+   `voalack.enroll_binding(alert_id, binding_id, binding_revision)`. Do not insert the current
+   binding pointer or generation directly; enrollment must enforce the lifetime and ownership
+   checks. Insert `authorization_policy` grants (user ID → customer) and the active
+   `authorization_policy_active` revision. An administrator-assigned occurrence label is not
+   evidence of the live provider's occurrence/conditional-write semantics.
 4. Configure Alerta: `PLUGINS` includes `voalack` (every other plugin with action hooks must be
    listed in `VOALACK_REVIEWED_ACTION_PLUGINS`), no write audit webhook or write audit log,
    `VOALACK_DEPLOYMENT_ID`, `VOALACK_SIGNING_KEY_FILES` (key files readable only by the service;
@@ -240,6 +247,16 @@ unrecognised, so eligible ACKs are refused.
 **Check after setup.** An ACK of a bound alert by a granted user returns `200` and leaves one
 intent with canonical bytes, digest, kid and MAC, and one capture linked to it; an unbound alert
 behaves as before.
+
+This capture setup is not a complete sender deployment. Current delivery also requires the
+verifier, sender, settler, projector and guard roles, accepted signing/verifier versions,
+an instance configuration, and the external recovery anchor. The synthetic guest provisions
+roles in `lab/setup_guest.sh`; the capture fixtures initialize the schema and bootstrap the
+anchor. Those fixtures use synthetic privileged credentials and must not be copied into a
+deployed configuration. Installing the wheel alone does not install or qualify the complete
+Alerta/PostgreSQL environment; the lab uses the exact profiles under `lab/profiles/`.
+See the [beta readiness checklist](../../docs/BETA_READINESS.md) for the missing runnable
+assembly, artifact and target-site qualification work.
 
 **Refusals for a bound alert.** `403`: API key, Hawk or anonymous credentials (any alert), no
 verified login path, or no policy grant. `503`: signing not configured, source differs from its
