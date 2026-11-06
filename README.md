@@ -82,6 +82,8 @@ restore refuses. There is **no supported coexistence-3a restore** and no S3c
 acceptance implied by historical recovery results. Hosted CI does not execute the
 PostgreSQL capture, coexistence, observer, sender or recovery qualification suites.
 
+### Candidate update — 6 November 2026
+
 The dispatch-only Forgehold smoke workflow has been removed from this candidate;
 all remaining workflows use GitHub-hosted runners. This supersedes the source
 change proposed in [PR #1](https://github.com/steliosx/voalack/pull/1), without

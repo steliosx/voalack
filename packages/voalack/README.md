@@ -225,9 +225,13 @@ unrecognised, so eligible ACKs are refused.
    the early alerts-table lock, and applies the ordered protector, admission, schema and
    post-protection SQL in one transaction. It installs the protected schema, capture trigger,
    owner functions and runtime grants; a refused installation must not be bypassed.
-3. As an administrator: insert immutable `binding_revisions`, the `bindings` pointer and a
-   `binding_generations` row per binding; insert `authorization_policy` grants (user ID →
-   customer) and the active `authorization_policy_active` revision.
+3. As an administrator: create the immutable `binding_revisions` row with the alert's current
+   open `alert_lifetime_id`, then enroll it through
+   `voalack.enroll_binding(alert_id, binding_id, binding_revision)`. Do not insert the current
+   binding pointer or generation directly; enrollment must enforce the lifetime and ownership
+   checks. Insert `authorization_policy` grants (user ID → customer) and the active
+   `authorization_policy_active` revision. An administrator-assigned occurrence label is not
+   evidence of the live provider's occurrence/conditional-write semantics.
 4. Configure Alerta: `PLUGINS` includes `voalack` (every other plugin with action hooks must be
    listed in `VOALACK_REVIEWED_ACTION_PLUGINS`), no write audit webhook or write audit log,
    `VOALACK_DEPLOYMENT_ID`, `VOALACK_SIGNING_KEY_FILES` (key files readable only by the service;
