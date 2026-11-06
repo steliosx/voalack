@@ -34,9 +34,10 @@ cp -a "$SRC/packages/voalack" "$WORK/voalack-src"
 "$WORK/builder/bin/python" -m build --outdir "$OUT/dist" "$WORK/ack-core-src"
 "$WORK/builder/bin/python" -m build --outdir "$OUT/dist" "$WORK/voalack-src"
 (cd "$OUT/dist" && sha256sum ./*.whl ./*.tar.gz > SHA256SUMS && sha256sum --check --strict SHA256SUMS)
-"$WORK/venv/bin/pip" install -q --no-index --no-deps "$OUT"/dist/*.whl
+"$WORK/venv/bin/pip" install -q --no-index --find-links "$OUT/dist" --no-deps \
+    'alerta-ack-core==0.1.0.dev0' 'voalack==0.1.0.dev0'
 "$WORK/venv/bin/pip" freeze > "$OUT/pip-freeze.txt"
-python3 -I "$SRC/lab/check_profile.py" "$SRC/lab/profiles/qualified-final.txt" "$OUT/pip-freeze.txt" \
+python3 -I "$SRC/lab/check_profile.py" "$SRC/lab/profiles/beta-demo-final.txt" "$OUT/pip-freeze.txt" \
     "$OUT/profile-check-final.txt"
 # The exact source, artifact manifest, profiles and logs remain part of the enclosing review packet.
 # -I prevents the source checkout or PYTHONPATH from substituting for installed product imports.

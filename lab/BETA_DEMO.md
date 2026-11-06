@@ -27,7 +27,11 @@ deployed installation.
 The wrapper uses the existing qualified lab profile, builds both wheel/sdist pairs
 in a separate build environment, installs the resulting wheels without resolving
 additional dependencies, verifies the final application profile, and invokes the
-demo with isolated Python. It records distribution SHA-256 sums, build output,
+demo with isolated Python. `profiles/beta-demo-final.txt` preserves every third-party
+entry from the existing qualified final profile and changes only the two local
+project source-directory references to their exact installed wheel versions. The
+original profile remains unchanged for its existing source-install runner.
+The wrapper records distribution SHA-256 sums, build output,
 dependency freezes, import version identities, demo JSON and an explicit exit code.
 Build dependency resolution and version constraints are not byte-reproducibility
 claims. Retain and review the actual artifact hashes and enclosing source evidence.
