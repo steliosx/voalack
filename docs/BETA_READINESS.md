@@ -3,8 +3,10 @@
 Source assessment: 6 November 2026, public repository `steliosx/voalack`
 (repository ID `1442050691`), application source at
 `3ca8bb6bd3cb5e86023d65540b85fee011e6c28d`.
-The accompanying documentation and workflow-removal candidate does not change
-application code or turn historical evidence into new qualification.
+The documentation/workflow cleanup and synthetic demo preparation do not change
+application code or turn historical evidence into new qualification. The new
+[demo payload](../lab/BETA_DEMO.md) is implemented but its native execution is
+**NOT_RUN**; it is not accepted beta evidence.
 
 The intended outcome remains the [first candidate requirements](REQUIREMENTS.md#4-first-candidate):
 preserve the feed, capture an authorized human ACK durably, deliver it to the
@@ -35,11 +37,11 @@ for the live-provider and installed-environment gates.
 
 | Work | Current evidence | Smallest useful completion evidence |
 | --- | --- | --- |
-| Runnable synthetic assembly | Runtime pieces expose Python APIs; the only package entry point is the Alerta plugin. The capture runner executes tests and exits. | A guest-only driver/runbook initializes the synthetic roles, Alerta, schema, external recovery anchor, signing configuration and exact bindings; exercises the restricted verifier, sender and projector; records local ACK, durable intent, remote fake effect and operator note; then stops cleanly. It must also demonstrate no resend after a possibly-sent outcome. |
-| Candidate distribution bundle | CI builds test wheels; this change produces no candidate wheel/sdist bundle. | Build both distributions in the approved guest, retain wheel and sdist bytes and SHA-256 manifest, record exact source/tree and dependency profile, install those exact artifacts in a clean environment and verify imports and packaged SQL/JSON resources. Rebuild from the sdists before asserting their usability. |
-| Installation/lifecycle runbook | Current setup notes describe capture and individual runtime components, not a complete installed delivery system. | Explicit dependency/bootstrap order, restricted runtime credentials separate from administrator bootstrap, anchor persistence/ownership, fail-closed startup, supported uninstall/rollback behavior and evidence for the supported fresh-install lifecycle. Document unsupported downgrade/restore rather than improvising a destructive reset of an existing deployment. |
+| Runnable synthetic assembly | The finite `lab/demo_beta.py` driver and guest wrapper are prepared and statically reviewed; native execution is NOT_RUN. This is not a persistent deployment service. | Run the exact reviewed payload in the coordinated fresh guest. Require its persisted human ACK, exact intent/capture, restricted verification, single fake delivery, projection and uncertainty/no-resend witnesses to pass, and independently verify source/artifact bindings and cleanup. |
+| Candidate distribution bundle | CI builds test wheels. The new demo wrapper prepares both sdist/wheel pairs, but has not run and has produced no candidate bundle. | Build both distributions in the approved guest, retain wheel and sdist bytes and SHA-256 manifest, record exact source/tree and dependency profile, install those exact artifacts in a clean environment and verify imports and packaged SQL/JSON resources. Rebuild from the sdists before asserting their usability. |
+| Installation/lifecycle runbook | [Candidate operations notes](BETA_OPERATIONS.md) now document dependencies, bootstrap order, role/anchor separation, refusals and unsupported removal/restore. They do not provide a persistent service or qualify an installed delivery system. | Verify the documented fresh-guest sequence natively, then supply and test the supported installed lifecycle, including removal/rollback. Preserve unsupported downgrade/restore limits rather than improvising a destructive reset of an existing deployment. |
 | Candidate regression evidence | Historical native results exist; public CI covers only its named jobs. | At the actual integration candidate, record the approved native suite and directly affected critical regressions, exact artifact/source identities, environment/profile, exit statuses and raw case results. Reuse unaffected evidence only with an explicit source/scope comparison. |
-| Operator and owner handoff | Design and historical reports are present. | One-page summary links exact artifacts, installation instructions, observed outcomes, unresolved gates and known limitations. No release/live-ready label until the relevant evidence exists. |
+| Operator and owner handoff | [One-page preparation summary](BETA_OWNER_SUMMARY.md) links the exact reviewed payload, scoped CI, runbook and open gates. Candidate distribution artifacts do not exist yet. | Add the actual artifact identities, native results and integration disposition after review. No release/live-ready label until the relevant evidence exists. |
 
 Use targeted critical checks during development and a batch review at the
 integration candidate. Do not require exhaustive new negative-control matrices
@@ -48,7 +50,7 @@ failed or unqualified; a larger pass count does not replace the required behavio
 
 ## Synthetic assembly acceptance sequence
 
-This is an implementation contract, not a claim that a demo command already exists.
+This is the acceptance contract for the prepared, unexecuted [demo command](../lab/BETA_DEMO.md).
 Run only in the existing approved disposable guest with synthetic data. Do not
 turn the test fixtures into deployment credentials or point them at a real site.
 

@@ -1,0 +1,45 @@
+# Synthetic beta candidate profile; native execution NOT_RUN.
+# Same third-party entries as qualified-final.txt. The only changed entries are
+# the two local projects, installed by exact version from the locally built wheel directory
+# rather than from source-directory direct references. Artifact hashes are recorded separately.
+alerta-ack-core==0.1.0.dev0
+alerta-server==9.1.0
+backports.zstd==1.8.0
+bcrypt==5.0.0
+blinker==1.9.0
+brotli==1.2.1
+certifi==2026.10.23
+cffi==2.1.1
+charset-normalizer==3.5.2
+click==8.5.0
+cryptography==50.0.2
+defusedxml==0.7.1
+Flask==3.1.3
+Flask-Compress==1.25
+flask-cors==6.0.5
+idna==3.20
+iniconfig==2.3.1
+itsdangerous==2.2.0
+Jinja2==3.1.6
+MarkupSafe==3.0.4
+mohawk==1.1.0
+packaging==26.3
+pluggy==1.7.0
+psycopg2-binary==2.9.10
+pycparser==3.12
+Pygments==2.21.0
+PyJWT==2.15.1
+pyparsing==3.3.3
+pytest==9.0.3
+python-dateutil==3.0.0
+pytz==2026.5
+PyYAML==6.0.3
+requests==2.34.2
+requests-hawk==1.2.1
+sentry-sdk==2.73.0
+six==1.17.0
+StrEnum==0.4.15
+tzdata==2026.6
+urllib3==2.8.0
+voalack==0.1.0.dev0
+Werkzeug==3.1.9

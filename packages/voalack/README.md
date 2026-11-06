@@ -255,8 +255,9 @@ roles in `lab/setup_guest.sh`; the capture fixtures initialize the schema and bo
 anchor. Those fixtures use synthetic privileged credentials and must not be copied into a
 deployed configuration. Installing the wheel alone does not install or qualify the complete
 Alerta/PostgreSQL environment; the lab uses the exact profiles under `lab/profiles/`.
-See the [beta readiness checklist](../../docs/BETA_READINESS.md) for the missing runnable
-assembly, artifact and target-site qualification work.
+See the [candidate operations notes](../../docs/BETA_OPERATIONS.md) for the prepared
+synthetic bootstrap and lifecycle limits, and the [beta readiness checklist](../../docs/BETA_READINESS.md)
+for native assembly validation, artifact and target-site qualification work still pending.
 
 **Refusals for a bound alert.** `403`: API key, Hawk or anonymous credentials (any alert), no
 verified login path, or no policy grant. `503`: signing not configured, source differs from its
