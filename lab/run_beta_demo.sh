@@ -14,14 +14,16 @@ test "${#SOURCE_COMMIT}" = 40
 test -d "$SRC"
 test ! -e "$OUT"
 test ! -e "$WORK"
-umask 077
-mkdir "$OUT" "$WORK"
+mkdir -m 700 "$OUT" "$WORK"
 exec > "$OUT/run.log" 2>&1
 trap 'rc=$?; printf "%s\n" "$rc" > "$OUT/exit-status.txt"' EXIT
 python3 --version
 # This is a declaration from the enclosing exact-source handoff, not independent Git proof.
 printf '%s\n' "$SOURCE_COMMIT" > "$OUT/declared-source-commit.txt"
+# Provision with the default umask: apt reads the downloaded repository key as its unprivileged _apt user, so a
+# key file created under umask 077 makes the PostgreSQL repository "not signed" and provisioning stops.
 OUT="$OUT" WORK="$WORK" sh "$SRC/lab/setup_guest.sh"
+umask 077
 
 # Keep build dependencies separate from the qualified application environment.
 python3 -m venv "$WORK/builder"
