@@ -1,6 +1,7 @@
 # Candidate installation and lifecycle notes
 
-**Prepared for lab review; native demo NOT_RUN; no installed-site qualification.**
+**Synthetic trial PASS at ec989ec8; cleanup acceptance incomplete; no installed-site qualification.**
+See the [dated trial evidence](BETA_TRIAL_20261108.md) for exact source and scope.
 This runbook describes the finite [synthetic demonstration](../lab/BETA_DEMO.md)
 and the shipped component boundaries. It is not a production installer or a
 persistent worker service. The current transport accepts only the loopback fake
@@ -26,7 +27,9 @@ build environment. It installs the two wheels by exact version from its local
 artifact directory with dependency resolution disabled. Retain all four artifacts
 and `dist/SHA256SUMS`, and verify the sums before transferring or installing them.
 Those hashes bind an observed build; they are not a reproducible-build claim.
-There is no candidate distribution bundle until this route has actually run.
+The recorded 8 November trial produced all four distribution files. Their retained
+hashes are listed in the [trial record](BETA_TRIAL_20261108.md). They are trial
+artifacts, not a published release or qualification of another build.
 
 ## Bootstrap order and ownership
 
@@ -126,7 +129,8 @@ cleanup evidence. Inspect installed package locations and packaged SQL/JSON
 resources as part of candidate review. A profile match is not an artifact hash.
 
 Both wrapper exit `0` and demo JSON `PASS` are necessary, together with the exact
-bindings and cleanup evidence. Neither has been observed for this prepared demo.
+bindings and cleanup evidence. The recorded trial has both exit/result witnesses
+and checked source/artifact bindings; full independent guest cleanup remains unverified.
 The existing hosted jobs do not run it. Do not publish the private work directory
 (synthetic signing key and anchor) or raw logs without checking for sensitive data.
 The [owner summary](BETA_OWNER_SUMMARY.md) separates prepared work, observed CI and
