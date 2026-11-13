@@ -94,7 +94,10 @@ for the distinction between workflow guards, repository settings and code review
 
 The [beta readiness checklist](docs/BETA_READINESS.md) records the remaining
 software, packaging and environment-evidence work. The candidate remains a
-fake-provider development snapshot, not an install-and-enable live beta.
+fake-provider development snapshot, not an install-and-enable live beta. The
+[8 November synthetic trial](docs/BETA_TRIAL_20261108.md) passed at exact source
+`ec989ec8b9238b417a1a6e94b00fd9cfcb633713`; cleanup acceptance and installed/live
+qualification remain separate and incomplete.
 
 No release, live ONE validation, occurrence/conditional-write qualification
 or target-site installed acceptance is established by this snapshot or CI.

@@ -257,7 +257,9 @@ deployed configuration. Installing the wheel alone does not install or qualify t
 Alerta/PostgreSQL environment; the lab uses the exact profiles under `lab/profiles/`.
 See the [candidate operations notes](../../docs/BETA_OPERATIONS.md) for the prepared
 synthetic bootstrap and lifecycle limits, and the [beta readiness checklist](../../docs/BETA_READINESS.md)
-for native assembly validation, artifact and target-site qualification work still pending.
+for the recorded synthetic assembly result and the cleanup, lifecycle and target-site
+qualification work still pending. The [trial record](../../docs/BETA_TRIAL_20261108.md)
+binds the observed result to exact source and four retained distribution hashes.
 
 **Refusals for a bound alert.** `403`: API key, Hawk or anonymous credentials (any alert), no
 verified login path, or no policy grant. `503`: signing not configured, source differs from its

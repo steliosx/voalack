@@ -1,8 +1,12 @@
 # Synthetic beta demonstration candidate
 
-**Native execution status: NOT_RUN.** This driver and wrapper are a preparation
-candidate. A static review or shell syntax check does not qualify their execution.
-They do not provide a live adapter, a persistent service, or installed-site acceptance.
+**Recorded native execution: PASS, synthetic_only, on 8 November 2026.**
+The exact source was `ec989ec8b9238b417a1a6e94b00fd9cfcb633713`. See the
+[trial evidence record](../docs/BETA_TRIAL_20261108.md) for source/artifact identities
+and independently inspected results. This is historical trial evidence, not a new
+run of a later documentation head. Complete guest-cleanup acceptance remains open.
+The driver and wrapper do not provide a live adapter, a persistent service, or
+installed-site acceptance.
 
 `run_beta_demo.sh` is a guest payload, not a host launcher. Use the existing approved
 disposable microVM lane, its fresh source checks, timing agreement and cleanup route.
