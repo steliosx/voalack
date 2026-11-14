@@ -5,7 +5,7 @@ SRC="${SRC:-/src}"; OUT="${OUT:-/out}"; WORK="${WORK:-/work}"
 mkdir -p "$OUT"
 exec > "$OUT/run.log" 2>&1
 set -x
-command -v flock bash python3
+command -v flock bash python3 jq
 mkdir -p "$WORK" && cp -a "$SRC/ci" "$SRC/tests" "$WORK/"
 python3 -m venv "$WORK/venv"
 "$WORK/venv/bin/pip" install -q "pytest==9.0.3"

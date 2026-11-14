@@ -1,4 +1,4 @@
-"""Launcher behaviour against fake gh/smolvm: polling, cleanup verification and failure paths."""
+"""Launcher behaviour against fake gh/smolvm: polling, admission, cleanup verification and failure paths."""
 import json
 import os
 import subprocess
@@ -25,10 +25,10 @@ def env(tmp_path):
             "GH": str(bin_dir / "gh"), "SMOLVM": str(bin_dir / "smolvm"), "MAX_JOBS": "3"}
 
 
-def setup(env, queued=0, vms=(), runners=None, run_status="queued"):
+def setup(env, queued=0, vms=(), runners=None, run_status="queued", **extra):
     Path(env["FAKE_STATE"], "state.json").write_text(json.dumps(
         {"queued": queued, "vms": list(vms), "runners": runners or {}, "next_id": 1, "calls": [],
-         "run_status": run_status}))
+         "run_status": run_status, **extra}))
 
 
 def state(env):
@@ -174,3 +174,83 @@ def test_malformed_unresolved_record_is_kept_and_blocks(env):
     r = launch(env)
     assert r.returncode == 4 and "malformed" in r.log and unresolved(env) == ["vm-bad"]
     assert not calls(env, "smolvm", "create")
+
+
+# --- Admission (audit 2026-11-08, finding 1) ----------------------------------------------------
+VOALACK = ["self-hosted", "Linux", "X64", "voalack"]
+
+
+def run(run_id, event, head, labels=VOALACK, status="queued", job_status="queued"):
+    return {"id": run_id, "status": status, "event": event, "head_repo": head,
+            "jobs": [{"status": job_status, "labels": labels}]}
+
+
+def nothing_started(env):
+    return not calls(env, "smolvm", "create") and not calls(env, "gh", "registration-token")
+
+
+def test_trusted_push_is_admitted(env):
+    setup(env, queued=1)
+    r = launch(env)
+    assert r.returncode == 0, r.log
+    assert "queued=1 starting" in r.log and len(calls(env, "smolvm", "create")) == 1
+
+
+@pytest.mark.parametrize("untrusted", [
+    run(5001, "pull_request", "someone/voalack"),            # fork pull request
+    run(5002, "pull_request", "steliosx/voalack"),           # pull request from a branch of this repository
+    run(5003, "pull_request_target", "steliosx/voalack"),
+    run(5004, "push", "someone/voalack"),                     # a push event naming another head repository
+    run(5005, "workflow_dispatch", "steliosx/voalack"),
+    run(5006, None, "steliosx/voalack"),                      # event missing
+    run(5007, "push", None),                                  # head repository missing
+    run(5008, None, None),
+])
+def test_untrusted_or_incomplete_run_refuses_before_launch(env, untrusted):
+    setup(env, queued=0, extra_runs=[untrusted])
+    r = launch(env)
+    assert r.returncode == 5, r.log
+    assert f"untrusted voalack job: run {untrusted['id']}" in r.log and "nothing started" in r.log
+    assert nothing_started(env)
+
+
+def test_mixed_queue_refuses_the_whole_poll(env):
+    # A trusted push is queued too; one untrusted job blocks every launch.
+    setup(env, queued=2, extra_runs=[run(5101, "pull_request", "someone/voalack")])
+    r = launch(env)
+    assert r.returncode == 5, r.log
+    assert nothing_started(env) and state(env)["queued"] == 2
+
+
+def test_untrusted_job_in_an_in_progress_run_refuses(env):
+    setup(env, queued=1, extra_runs=[run(5201, "pull_request", "someone/voalack", status="in_progress")])
+    r = launch(env)
+    assert r.returncode == 5, r.log
+    assert nothing_started(env)
+
+
+@pytest.mark.parametrize("other", [
+    run(5301, "pull_request", "someone/voalack", labels=["ubuntu-24.04"]),   # hosted job of a fork
+    run(5302, "pull_request", "someone/voalack", job_status="completed"),    # not queued
+    run(5303, "pull_request", "someone/voalack", labels=["self-hosted", "Linux", "X64", "voalack-other"]),
+])
+def test_jobs_not_needing_a_voalack_runner_neither_launch_nor_refuse(env, other):
+    setup(env, queued=0, extra_runs=[other])
+    r = launch(env)
+    assert r.returncode == 0 and "no queued voalack jobs (query succeeded)" in r.log
+    assert nothing_started(env)
+    setup(env, queued=1, extra_runs=[other])
+    r = launch(env)
+    assert r.returncode == 0, r.log
+    assert len(calls(env, "smolvm", "create")) == 1
+
+
+def test_launcher_filters_reach_jq_unchanged(env):
+    # The fake applies the launcher's own --jq expressions with the real jq.
+    setup(env, queued=1)
+    assert launch(env).returncode == 0
+    listed = [c for c in calls(env, "gh", "/actions/runs?") if "--jq" in c]
+    jobs = [c for c in calls(env, "gh", "/jobs") if "--jq" in c]
+    assert listed and jobs
+    assert all(".head_repository.full_name" in c[c.index("--jq") + 1] for c in listed)
+    assert all('index("voalack")' in c[c.index("--jq") + 1] for c in jobs)
