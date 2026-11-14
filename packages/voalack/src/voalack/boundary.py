@@ -1,10 +1,12 @@
 """The request transaction boundary for eligible ACKs (design amendments A1, A2, A3, A5).
 
 Install with :func:`install` from an application factory, before the first request. For a
-``PUT /alert/<uuid>/action`` with ``action=ack`` on an alert that has an active binding:
+``PUT /alert/<id>/action`` with ``action=ack`` on an alert that has an active binding:
 
-* ``before_request`` only recognises the candidate request syntax. Before authentication
-  nothing queries the binding registry or takes a database lock (review finding B2, A2).
+* ``before_request`` only recognises the candidate request syntax: any nonempty alert id, because
+  Alerta also resolves an id prefix, an id in another letter case and an alert's
+  ``last_receive_id`` (audit 2026-11-08, finding 2). Before authentication nothing queries the
+  binding registry or takes a database lock (review finding B2, A2).
 * the gate runs where the pinned Alerta 9.1.0 action view loads the alert
   (``Alert.find_by_id(alert_id, customers)``, ``alerta/views/alerts.py:159``): after the real
   permission decorator (``:147``) and with its customer filter, before ``process_action``
@@ -16,7 +18,9 @@ Install with :func:`install` from an application factory, before the first reque
   and foreign ``request_finished`` receivers (B1), defers Alerta's commits,
   locks the alert row with a bounded wait, re-checks the binding under ``FOR SHARE`` and
   reloads the complete alert under the lock with the same customer filter. An unbound alert,
-  or one whose binding went away before the lock, continues upstream untouched.
+  or one whose binding went away before the lock, continues upstream untouched. Right after
+  the ``403`` check, a request whose id is not the loaded alert's own id is refused with ``400``,
+  for bound and unbound alerts alike and before any membership query (audit finding 2).
 * the route's view function is wrapped to record that it returned normally, and an
   application-scoped ``got_request_exception`` receiver marks the transaction failed when any
   later step raises (for example a response callback), so an error that an error handler turns
@@ -78,19 +82,13 @@ NATIVE_CALLBACK_PINS = {"flask-cors": "6.0.5", "Flask-Compress": "1.25"}
 _original_find_by_id = None
 
 
-def _canonical_uuid(value: str) -> bool:
-    try:
-        return str(uuid.UUID(value)) == value
-    except (ValueError, AttributeError, TypeError):
-        return False
-
-
 def _begin():
     if request.method != "PUT" or request.endpoint != "api.action_alert":
         return None
     payload = request.get_json(silent=True)
     alert_id = (request.view_args or {}).get("alert_id")
-    if not isinstance(payload, dict) or payload.get("action") != "ack" or not _canonical_uuid(alert_id):
+    if not isinstance(payload, dict) or payload.get("action") != "ack" or not isinstance(alert_id, str) \
+            or not alert_id:
         return None
     g.voalack_candidate = alert_id         # syntax only: no registry query, no lock (B2)
     return None
@@ -152,6 +150,11 @@ def _gate(alert_id: str, customers):
         # Uniform for bound and unbound alerts of the public ONE class: membership is not
         # looked up (B2 as amended by coexistence 3a r8).
         raise _refuse(None, "ACK requires an authenticated user, not an API key", 403)
+    if alert.id != alert_id:
+        # Audit finding 2: Alerta resolved an alias (an id prefix, another letter case or the
+        # last_receive_id). Only the alert's own id may acknowledge a ONE-class alert; membership is
+        # not looked up, so bound and unbound alerts are refused alike.
+        raise _refuse(None, "ACK requires the alert's full id", 400)
     conn = db.get_db()
     cur = conn.cursor()
     try:
