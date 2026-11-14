@@ -9,7 +9,7 @@ talks only to a loopback fake provider (`fake-one/v1`) in the test guest.
 ## How capture works
 
 1. **Candidate.** `voalack.boundary` (installed by the `create_app` WSGI factory) recognises
-   `PUT /alert/<uuid>/action` with `action=ack` by syntax only. Before authentication it queries
+   `PUT /alert/<id>/action` with `action=ack` by syntax only. Before authentication it queries
    nothing and takes no lock, so unauthorised callers learn nothing about bindings (A2).
 2. **Gate, inside the authorised route.** The pinned Alerta 9.1.0 action view checks permission
    (`@permission(Scope.write_alerts)`), then loads the alert with the caller's customer filter
@@ -19,6 +19,9 @@ talks only to a loopback fake provider (`fake-one/v1`) in the test guest.
    - it refuses ACKs from non-human credentials (API keys, Hawk, anonymous access) with `403`,
      for bound and unbound alerts alike, before any registry query. **This changes upstream
      behaviour:** with Voalack installed, API keys cannot acknowledge alerts;
+   - it refuses with `400` an ACK whose id is not the loaded alert's own id (Alerta also resolves
+     an id prefix, another letter case and the alert's `last_receive_id`), again for bound and
+     unbound alerts alike and before any registry query;
    - it looks up the binding (1 s lock wait, 15 s statement limit); an unbound alert continues
      upstream, untouched;
    - for a bound alert it requires `READ COMMITTED`, refuses with `503` if another
