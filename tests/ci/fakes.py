@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
 """Fake `gh` and `smolvm` for launcher tests. State lives in $FAKE_STATE/state.json.
 
+The fake `gh api` answers the runs and jobs endpoints with JSON shaped like GitHub's REST
+responses and applies the caller's --jq expression with the real `jq` (as `gh` applies it), so
+the launcher's own filters are exercised, not canned counts. The default run (id 4242) is a push
+of steliosx/voalack holding `queued` queued voalack jobs; `event` and `head_repo` override its
+metadata (null: missing), and `extra_runs` adds runs: {id, status, event, head_repo, jobs:
+[{status, labels}]}.
+
 FAKE_FAIL is a comma list of steps to fail: runs (any status), runs_queued, runs_in_progress, jobs, runners, delete_runner, token,
 create, start, provision, configure, run, stop, delete_vm, ls. FAKE_MALFORMED=runs|jobs returns
 garbage. FAKE_STICKY=1 keeps the runner registered after its job (as if not ephemeral).
 """
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -29,6 +37,38 @@ def fail(step):
         sys.exit(9)
 
 
+LABELS = ["self-hosted", "Linux", "X64", "voalack"]
+
+
+def runs(state):
+    """Every run in the fake repository, GitHub-shaped."""
+    default = {"id": 4242, "status": state.get("run_status", "queued"),
+               "event": state.get("event", "push"), "head_repo": state.get("head_repo", "steliosx/voalack"),
+               "jobs": [{"status": "queued", "labels": LABELS}] * state["queued"]}
+    result = [default] if state["queued"] else []
+    for run in result + state.get("extra_runs", []):
+        shaped = {"id": run["id"], "status": run["status"], "head_branch": "main", "head_sha": "0" * 40}
+        if run.get("event") is not None:
+            shaped["event"] = run["event"]
+        if run.get("head_repo") is not None:
+            shaped["head_repository"] = {"full_name": run["head_repo"]}
+        shaped["jobs"] = [{"id": run["id"] * 100 + i, "run_id": run["id"], "status": j["status"],
+                           "labels": j["labels"]} for i, j in enumerate(run["jobs"])]
+        yield shaped
+
+
+def answer(args, payload):
+    """Print the payload as `gh api` would: through --jq if given (raw strings), else as JSON."""
+    if "--jq" not in args:
+        print(json.dumps(payload))
+        return
+    out = subprocess.run(["jq", "-r", args[args.index("--jq") + 1]], input=json.dumps(payload),
+                         capture_output=True, text=True)
+    if out.returncode:
+        sys.exit(f"jq failed: {out.stderr}")
+    sys.stdout.write(out.stdout)
+
+
 def gh(args, state):
     url = next((a for a in args if a.startswith("repos/")), "")
     repo = "/".join(url.split("/")[1:3])
@@ -39,11 +79,17 @@ def gh(args, state):
         fail("runs"); fail(f"runs_{status}")
         if MALFORMED == "runs":
             print("not-a-number")
-        elif state["queued"] and state.get("run_status", "queued") == status:
-            print("4242")
+        else:
+            listed = [{k: v for k, v in r.items() if k != "jobs"} for r in runs(state) if r["status"] == status]
+            answer(args, {"total_count": len(listed), "workflow_runs": listed})
     elif "/jobs" in url:
         fail("jobs")
-        print("garbage" if MALFORMED == "jobs" else state["queued"])
+        if MALFORMED == "jobs":
+            print("garbage")
+        else:
+            run_id = int(url.split("/runs/", 1)[1].split("/", 1)[0])
+            jobs = next((r["jobs"] for r in runs(state) if r["id"] == run_id), [])
+            answer(args, {"total_count": len(jobs), "jobs": jobs})
     elif url.endswith("/registration-token"):
         fail("token")
         print("FAKE-REGISTRATION-TOKEN-0123456789")
