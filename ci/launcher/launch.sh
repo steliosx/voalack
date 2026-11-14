@@ -9,10 +9,17 @@
 #   3. registers an --ephemeral --disableupdate runner, which takes one job and exits;
 #   4. deletes the runner registration if still present and the VM, and verifies both are gone.
 #
+# Admission: every run with a queued `voalack` job must be a push event whose head repository is
+# exactly the launcher's repository. A queued `voalack` job from a pull request, a fork or a run
+# whose event or head repository is missing refuses the whole poll before anything starts
+# (audit 2026-11-08, finding 1). This vets the queue as polled; it does not bind the runner to a
+# particular job, and a job queued after the poll is not vetted.
+#
 # Exit status: 0 idle or all jobs handled; 2 GitHub unavailable (poll failed; nothing started);
 # 3 a launch step or the runner process failed (resources cleaned up and verified; a job may
 # not have completed); 4 cleanup unresolved (resources
-# may remain; recorded under $STATE/unresolved; no further launches until `--cleanup` succeeds).
+# may remain; recorded under $STATE/unresolved; no further launches until `--cleanup` succeeds);
+# 5 an untrusted `voalack` job is queued (nothing started).
 #
 # Usage: launch.sh [--cleanup] [owner/repo]     (default steliosx/voalack)
 # Env:   MAX_JOBS (default 5); STATE (default ~/.local/state/voalack-ci); SMOLVM, GH (commands)
@@ -39,22 +46,30 @@ log() { printf '%s %s\n' "$(date -u +%FT%TZ)" "$*" | tee -a "$LOG"; }
 # --- GitHub queue -------------------------------------------------------------------------
 # Prints the number of queued jobs needing $LABEL. A run that is already in progress can still
 # hold queued jobs (one runner at a time serves a multi-job workflow), so both queued and
-# in-progress runs are inspected. Returns non-zero if any query fails or a response is
-# malformed; never reports idle on a failed or partial query.
+# in-progress runs are inspected. Returns 1 if any query fails or a response is malformed (never
+# reports idle on a failed or partial query), and 3 if a run holding a queued $LABEL job is not a
+# push of this repository (see Admission above).
 queued_jobs() {
-  local runs="" found total=0 run n status
+  local runs="" found total=0 run n status id event head
   for status in queued in_progress; do
-    found=$("$GH" api "repos/$REPO/actions/runs?status=$status&per_page=100" --jq '.workflow_runs | map(.id) | .[]') || return 1
-    runs="$runs $found"
+    found=$("$GH" api "repos/$REPO/actions/runs?status=$status&per_page=100" \
+            --jq '.workflow_runs[] | [.id, (.event // "-"), (.head_repository.full_name // "-")] | @tsv') || return 1
+    runs="$runs$found"$'\n'
   done
-  runs=$(tr ' ' '\n' <<<"$runs" | sed '/^$/d' | sort -u)
-  for run in $runs; do
-    [[ "$run" =~ ^[0-9]+$ ]] || return 1
-    n=$("$GH" api "repos/$REPO/actions/runs/$run/jobs?per_page=100" \
+  runs=$(sed '/^$/d' <<<"$runs" | sort -u)
+  while IFS=$'\t' read -r id event head; do
+    [ -n "$id" ] || continue
+    [[ "$id" =~ ^[0-9]+$ ]] || return 1
+    n=$("$GH" api "repos/$REPO/actions/runs/$id/jobs?per_page=100" \
         --jq "[.jobs[] | select(.status==\"queued\" and (.labels | index(\"$LABEL\")))] | length") || return 1
     [[ "$n" =~ ^[0-9]+$ ]] || return 1
+    [ "$n" -gt 0 ] || continue
+    if [ "$event" != push ] || [ "$head" != "$REPO" ]; then
+      log "untrusted $LABEL job: run $id event=${event:--} head=${head:--}" >&2
+      return 3
+    fi
     total=$((total + n))
-  done
+  done <<<"$runs"
   echo "$total"
 }
 
@@ -126,7 +141,9 @@ fail() {  # a launch step failed: clean up now; exit 3 if verified clean, 4 othe
 }
 
 for _ in $(seq "$MAX_JOBS"); do
-  if ! pending=$(queued_jobs); then log "GitHub unavailable: queue query failed; nothing started"; exit 2; fi
+  pending=$(queued_jobs); qrc=$?
+  if [ "$qrc" = 3 ]; then log "untrusted $LABEL job queued; nothing started"; exit 5; fi
+  if [ "$qrc" != 0 ]; then log "GitHub unavailable: queue query failed; nothing started"; exit 2; fi
   [ "$pending" -gt 0 ] || { log "no queued $LABEL jobs (query succeeded)"; exit 0; }
   VM="voalack-ci-$(date -u +%Y%m%d%H%M%S)-$RANDOM"; NAME="$VM"
   log "queued=$pending starting $VM"
