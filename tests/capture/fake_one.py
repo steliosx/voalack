@@ -209,6 +209,8 @@ class FakeOne:
                         alarm["target_id"] = "9999"
                     if mode == "grouped":
                         alarm.update(kind="grouped_alarm", children=["4712", "4713"])
+                    if mode == "empty_children":      # a single alarm's kind with an empty children list
+                        alarm.update(children=[])
                     if mode == "no_kind":
                         alarm.pop("kind", None)
                     if mode == "no_completion":

@@ -190,6 +190,7 @@ def test_attribution_relies_on_the_completed_publication_not_on_request_exit(cli
     ("wrong_target", None, "evidence_only"),
     ("ambiguous", None, "evidence_only"),
     ("grouped", None, "evidence_only"),
+    ("empty_children", None, "evidence_only"),        # audit 18: any children key, so preflight must refuse it
     ("no_kind", None, "evidence_only"),
     ("no_completion", None, "evidence_only"),         # our operation without the completion marker
     ("comment", None, "evidence_only"),               # our operation id, another comment
