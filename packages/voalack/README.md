@@ -16,9 +16,10 @@ talks only to a loopback fake provider (`fake-one/v1`) in the test guest.
    (`Alert.find_by_id(alert_id, customers)`), then runs the action hooks (`process_action`).
    Voalack's gate replaces that load for the candidate request only:
    - it loads the alert as upstream does (not found or other customer: upstream `404`);
-   - it refuses ACKs from non-human credentials (API keys, Hawk, anonymous access) with `403`,
-     for bound and unbound alerts alike, before any registry query. **This changes upstream
-     behaviour:** with Voalack installed, API keys cannot acknowledge alerts;
+   - for an alert of the public Veeam ONE class, it refuses ACKs from non-human credentials (API
+     keys, Hawk, anonymous access) with `403`, for bound and unbound alerts alike, before any
+     registry query. **This changes upstream behaviour:** with Voalack installed, API keys cannot
+     acknowledge Veeam ONE alerts; alerts of other providers keep upstream behaviour;
    - it looks up the binding (1 s lock wait, 15 s statement limit); an unbound alert continues
      upstream, untouched;
    - for a bound alert it requires `READ COMMITTED`, refuses with `503` if another
@@ -259,7 +260,7 @@ See the [candidate operations notes](../../docs/BETA_OPERATIONS.md) for the prep
 synthetic bootstrap and lifecycle limits, and the [beta readiness checklist](../../docs/BETA_READINESS.md)
 for native assembly validation, artifact and target-site qualification work still pending.
 
-**Refusals for a bound alert.** `403`: API key, Hawk or anonymous credentials (any alert), no
+**Refusals for a bound alert.** `403`: API key, Hawk or anonymous credentials (any Veeam ONE alert, bound or not), no
 verified login path, or no policy grant. `503`: signing not configured, source differs from its
 binding revision, unreviewed response callback or `request_finished` receiver, unsupported
 isolation, alert busy, registry unavailable. `500`: the capture or its signed envelope did not
