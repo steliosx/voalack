@@ -12,6 +12,7 @@ Phases: ``open`` (epoch 1, bootstrap) -> ``closed`` (e) -> ``inventoried`` (e) -
 from __future__ import annotations
 
 import contextlib
+import errno
 import fcntl
 import hashlib
 import json
@@ -285,15 +286,29 @@ class Supervisor:
             os.close(fd)
 
     def _write_atomic(self, name: str, data: bytes) -> None:
+        """Write every byte to a temporary file, make it durable and check its length; only then
+        replace ``name``. A short write (a full disk) raises before the good file is touched
+        (audit 2026-11-08, finding 7)."""
         tmp = os.path.join(self.directory, f".{name}.tmp")
         fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644)
         try:
-            os.write(fd, data)
+            view, done = memoryview(data), 0
+            while done < len(data):
+                n = os.write(fd, view[done:])
+                if n <= 0:
+                    raise OSError(errno.ENOSPC, f"{name}: no progress writing")
+                done += n
             self.fault(f"write:{name}")
             os.fsync(fd)
+            if os.fstat(fd).st_size != len(data):
+                raise OSError(errno.EIO, f"{name}: incomplete write")
             os.fchmod(fd, 0o444)
-        finally:
+        except BaseException:
             os.close(fd)
+            with contextlib.suppress(OSError):
+                os.unlink(tmp)                # a partial temporary file is never left behind
+            raise
+        os.close(fd)
         self.fault(f"rename:{name}")
         os.replace(tmp, os.path.join(self.directory, name))
         _fsync_dir(self.directory)

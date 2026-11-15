@@ -91,6 +91,13 @@ launcher (ci/launcher/launch.sh, on demand) ── sees the queued job
   and launches nothing more until `launch.sh --cleanup` succeeds.
 - **A failed GitHub query is not "idle".** If the queue query fails or returns something
   malformed, the launcher exits with status 2 without minting a token or creating a VM.
+- **Only pushes of this repository are admitted.** Every run that holds a queued `voalack` job
+  must be a `push` event whose head repository is exactly this repository. If any such run is a
+  pull request, comes from a fork, or lacks its event or head repository, the launcher exits with
+  status 5 and starts nothing, not even for the trusted jobs in the same queue. Jobs that do not
+  need a `voalack` runner are ignored. This vets the queue as polled: it does not bind a runner to
+  a particular job, and a job queued after the poll is not vetted. The launcher stays suspended
+  for this public repository.
 - **Actions.** The checked-in workflows use GitHub-owned actions pinned to full commit SHAs.
   This describes the source, not an assertion that the repository's mutable allowed-actions setting enforces it.
 

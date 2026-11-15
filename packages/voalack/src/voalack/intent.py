@@ -9,13 +9,18 @@ from __future__ import annotations
 
 import functools
 import inspect
+import logging
 import sys
 import weakref
 from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any, Mapping
 
+from alerta_ack_core.profiles import KID_RE, MAX_KEY_BYTES, MIN_KEY_BYTES
+
 from . import envelope as v2
+
+LOG = logging.getLogger("voalack.intent")
 
 MAX_CAPTURE_SECONDS = 60
 MAX_EXECUTION_SECONDS = 4 * 3600
@@ -31,32 +36,55 @@ class Signing:
     execution_window: timedelta
 
 
+def _unusable(setting: str, why: str) -> None:
+    """Log which setting made the configuration unusable (never a value or key byte)."""
+    LOG.error("signing configuration unusable: %s %s; bound ACKs are refused until it is fixed", setting, why)
+    return None
+
+
 def load_signing(config: Mapping[str, Any]) -> Signing | None:
     """Trusted configuration, or None when any part is missing or invalid (bound ACKs are then
-    refused; an incomplete deployment is a hold, not a crash)."""
+    refused; an incomplete deployment is a hold, not a crash). The first unusable setting is
+    logged by name; every configured key must have a valid key ID and a usable length, so a bad
+    key is found at startup rather than as a failed ACK (audit 2026-11-08, finding 12)."""
+    deployment = config.get("VOALACK_DEPLOYMENT_ID")
+    files = config.get("VOALACK_SIGNING_KEY_FILES")
+    kid = config.get("VOALACK_ACTIVE_KID")
+    providers = config.get("VOALACK_ALLOWED_AUTH_PROVIDERS") or []
+    revision = config.get("VOALACK_MESSAGE_POLICY_REVISION")
+    capture = config.get("VOALACK_CAPTURE_WINDOW_SECONDS", MAX_CAPTURE_SECONDS)
+    execution = config.get("VOALACK_EXECUTION_WINDOW_SECONDS", MAX_EXECUTION_SECONDS)
+    if not isinstance(deployment, str):
+        return _unusable("VOALACK_DEPLOYMENT_ID", "is missing or not a string")
+    if not isinstance(files, Mapping) or not files:
+        return _unusable("VOALACK_SIGNING_KEY_FILES", "is missing or empty")
+    if not all(isinstance(k, str) and KID_RE.fullmatch(k) for k in files):
+        return _unusable("VOALACK_SIGNING_KEY_FILES", "has a key ID that is not 1-32 of [A-Za-z0-9_.-]")
+    if not isinstance(kid, str) or kid not in files:
+        return _unusable("VOALACK_ACTIVE_KID", "is missing or not a key in VOALACK_SIGNING_KEY_FILES")
+    if type(revision) is not int or revision < 1:
+        return _unusable("VOALACK_MESSAGE_POLICY_REVISION", "is not a positive integer")
+    if type(capture) is not int or not 1 <= capture <= MAX_CAPTURE_SECONDS:
+        return _unusable("VOALACK_CAPTURE_WINDOW_SECONDS", f"is not an integer from 1 to {MAX_CAPTURE_SECONDS}")
+    if type(execution) is not int or not capture <= execution <= MAX_EXECUTION_SECONDS:
+        return _unusable("VOALACK_EXECUTION_WINDOW_SECONDS",
+                         f"is not an integer from the capture window to {MAX_EXECUTION_SECONDS}")
+    if not isinstance(providers, (list, tuple, set, frozenset)) or not all(isinstance(p, str) for p in providers):
+        return _unusable("VOALACK_ALLOWED_AUTH_PROVIDERS", "is not a list of strings")
     try:
-        deployment = config.get("VOALACK_DEPLOYMENT_ID")
-        files = config.get("VOALACK_SIGNING_KEY_FILES")
-        kid = config.get("VOALACK_ACTIVE_KID")
-        providers = config.get("VOALACK_ALLOWED_AUTH_PROVIDERS") or []
-        revision = config.get("VOALACK_MESSAGE_POLICY_REVISION")
-        capture = config.get("VOALACK_CAPTURE_WINDOW_SECONDS", MAX_CAPTURE_SECONDS)
-        execution = config.get("VOALACK_EXECUTION_WINDOW_SECONDS", MAX_EXECUTION_SECONDS)
-        if (not isinstance(deployment, str) or not isinstance(files, Mapping) or not isinstance(kid, str)
-                or kid not in files or type(revision) is not int or revision < 1
-                or type(capture) is not int or not 1 <= capture <= MAX_CAPTURE_SECONDS
-                or type(execution) is not int or not capture <= execution <= MAX_EXECUTION_SECONDS
-                or not all(isinstance(p, str) for p in providers)):
-            return None
         ctx = v2.Context(deployment_id=deployment, allowed_auth_providers=frozenset(providers))
         keys = {}
         for key_id, path in files.items():
             with open(path, "rb") as handle:
-                keys[(deployment, ctx.provider, ctx.purpose, key_id)] = handle.read()
+                data = handle.read(MAX_KEY_BYTES + 1)
+            if not MIN_KEY_BYTES <= len(data) <= MAX_KEY_BYTES:
+                return _unusable("VOALACK_SIGNING_KEY_FILES",
+                                 f"key {key_id!r} is not {MIN_KEY_BYTES} to {MAX_KEY_BYTES} bytes long")
+            keys[(deployment, ctx.provider, ctx.purpose, key_id)] = data
         ring = v2.KeyRing(keys, {(deployment, ctx.provider, ctx.purpose): kid})
         return Signing(ctx, ring, kid, revision, timedelta(seconds=capture), timedelta(seconds=execution))
-    except (OSError, TypeError, ValueError):
-        return None
+    except (OSError, TypeError, ValueError) as exc:
+        return _unusable("VOALACK_SIGNING_KEY_FILES", f"could not be loaded ({type(exc).__name__})")
 
 
 # --- Ownership class (coexistence 3a, contract r8 section 1) ---------------------------------------
