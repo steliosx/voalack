@@ -15,7 +15,9 @@ cp -a "$SRC/packages/ack-core" "$WORK/ack-core"
 cp -a "$SRC/packages/voalack" "$WORK/voalack"
 python3 -m venv "$WORK/venv"
 . "$WORK/venv/bin/activate"
-pip install -q --upgrade pip
+# pip is pinned (audit 2026-11-08, finding 16) and its version recorded with the evidence.
+pip install -q "pip==26.3"
+pip --version > "$OUT/pip-version.txt"
 pip install -q "build==1.3.0" "pytest==9.0.3"
 python -m build --wheel --outdir "$OUT/dist" "$WORK/ack-core"
 python -m build --wheel --outdir "$OUT/dist" "$WORK/voalack"
