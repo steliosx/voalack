@@ -1,5 +1,5 @@
 #!/bin/sh
-# Provision a disposable guest for T03b: PostgreSQL 18 (PGDG) and Alerta 9.1.0 in a venv.
+# Provision a disposable guest for T03b: PostgreSQL 18.7 (PGDG) and Alerta 9.1.0 in a venv.
 # Synthetic data only; nothing listens beyond localhost.
 #   WORK  scratch directory (default /work)
 set -eu
@@ -9,10 +9,22 @@ apt-get update -qq
 apt-get install -y -qq --no-install-recommends ca-certificates curl gnupg lsb-release >/dev/null
 install -d /usr/share/postgresql-common/pgdg
 curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+# The repository key is pinned by its primary fingerprint, not by the file's hash: the published file can gain new
+# signatures while the key stays the same. The file must hold exactly one primary key, and it must be this one.
+PGDG_KEY_FPR=B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+key_fpr=$(gpg --batch --homedir "$(mktemp -d)" --show-keys --with-colons \
+    /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc 2>/dev/null \
+  | awk -F: '$1 == "pub" {n++; want = 1; next} want && $1 == "fpr" {print $10; want = 0} END {if (n != 1) print "keys:" n}')
+[ "$key_fpr" = "$PGDG_KEY_FPR" ] || { echo "PGDG repository key is not $PGDG_KEY_FPR (got: $key_fpr)"; exit 1; }
 echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 apt-get update -qq
 apt-get install -y -qq --no-install-recommends postgresql-18 >/dev/null
 pg_ctlcluster 18 main start
+# PostgreSQL is pinned to 18.7. The PGDG main repository carries only the latest minor release, so a newer one stops
+# provisioning here, before any test runs, and a result never names the wrong server version.
+su postgres -c "psql -At -c 'SELECT version()'" > "${OUT:-/tmp}/pg-version.txt"
+pg_num=$(su postgres -c "psql -At -c 'SHOW server_version_num'")
+[ "$pg_num" = 180007 ] || { echo "PostgreSQL server_version_num is $pg_num, not 180007 (18.7)"; exit 1; }
 su postgres -c "psql -q -c \"CREATE ROLE alerta LOGIN PASSWORD 'lab-only-synthetic'\""
 # The database is owned by a separate role, not by Alerta's runtime login (review: M2 topology).
 su postgres -c "psql -q -c \"CREATE ROLE alerta_dbowner NOLOGIN\""

@@ -15,7 +15,7 @@ kept in `packages/ack-core/NOTICE`. No other third-party source code is included
 | Component | Version tested | License |
 |---|---|---|
 | Alerta server (`alerta-server`) | 9.1.0 | Apache-2.0 |
-| PostgreSQL | 18.6 | PostgreSQL License |
+| PostgreSQL | 18.7 | PostgreSQL License |
 
 ## Test and lab environment (installed from PyPI; exact pins in `lab/profiles/`)
 

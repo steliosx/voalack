@@ -49,7 +49,7 @@ and anything the gitleaks rules do not describe.
 
 ## Disposable microVM runs (local)
 
-The full capture suite (PostgreSQL 18.6 and Alerta 9.1.0) and recorded qualification runs do not run on hosted
+The full capture suite (PostgreSQL 18.7 and Alerta 9.1.0) and recorded qualification runs do not run on hosted
 runners. They run in disposable microVMs on a maintainer host, with recorded evidence. The on-demand launcher
 below is kept for those runs and for its own tests; no workflow targets the `voalack` label any more.
 

@@ -6,7 +6,7 @@ Start with README.md and `packages/voalack/README.md`.
   any compatibility effect.
 - Changes to signing, authority, SQL grants, the DDL guard, delivery state or migrations need review by a maintainer
   who knows that boundary. Never weaken a test or broaden a grant to get a green run.
-- CI runs the package and launcher tests (`docs/CI.md`). The full capture suite needs PostgreSQL 18.6 and
+- CI runs the package and launcher tests (`docs/CI.md`). The full capture suite needs PostgreSQL 18.7 and
   Alerta 9.1.0 and runs in a disposable virtual machine; say in the pull request whether you ran it.
 - New tests should show a real behaviour or failure boundary, not mirror an implementation detail. A skipped test is
   not a pass.

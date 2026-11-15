@@ -207,7 +207,7 @@ rows, message bounds, window limits, policy/binding serialization, log and respo
 
 **Supported versions.** Alerta 9.1.0 (PostgreSQL backend), Flask 3.1.3, flask-cors 6.0.5,
 Flask-Compress 1.25, bcrypt 5.0.0, PyJWT 2.15.1, PostgreSQL with `READ COMMITTED` (tested on
-PostgreSQL 18.6 from PGDG; other versions are untested). Install refuses
+PostgreSQL 18.7 from PGDG; other versions are untested). Install refuses
 other Alerta versions and unqualified verifiers; other extension versions make their callbacks
 unrecognised, so eligible ACKs are refused.
 
