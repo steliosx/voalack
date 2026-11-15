@@ -686,7 +686,9 @@ class OwnerSession:
             status, alarm = None, None
             observation.update(error=type(exc).__name__)
         known = status == 200 and isinstance(alarm, dict) and alarm.get("target_id") == target_id
-        if known and "kind" in alarm and (alarm["kind"] != "triggered_alarm" or alarm.get("children")):
+        # A "children" key of any value is a grouped alarm, as the database's settlement rules read it
+        # (`al ? 'children'`); an empty list must not pass here and then never settle (audit finding 18).
+        if known and "kind" in alarm and (alarm["kind"] != "triggered_alarm" or "children" in alarm):
             row = self._owner_call("SELECT voalack.close_unsupported_target(%s, %s, %s, %s, %s::jsonb) AS o",
                                    (attempt_id, self.instance_id, self.generation, self.incarnation,
                                     json.dumps(observation)))

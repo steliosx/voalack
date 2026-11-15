@@ -273,6 +273,7 @@ def test_unknown_not_sent_commit_stops_without_retry(client, app, instance, fake
 # --- target refusals (A6) --------------------------------------------------------------------
 
 @pytest.mark.parametrize("mode,reason,state", [("grouped", "unsupported_target", "BLOCKED"),
+                                               ("empty_children", "unsupported_target", "BLOCKED"),   # audit 18
                                                ("no_kind", "preflight_unavailable", "QUEUED")])
 def test_unsupported_or_unstated_target_kind_sends_nothing(client, app, instance, fake, mode, reason, state):
     effect_id = _effect(client, app, instance)
