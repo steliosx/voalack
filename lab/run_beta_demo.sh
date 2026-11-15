@@ -20,8 +20,10 @@ trap 'rc=$?; printf "%s\n" "$rc" > "$OUT/exit-status.txt"' EXIT
 python3 --version
 # This is a declaration from the enclosing exact-source handoff, not independent Git proof.
 printf '%s\n' "$SOURCE_COMMIT" > "$OUT/declared-source-commit.txt"
-# Provision with the default umask: apt reads the downloaded repository key as its unprivileged _apt user, so a
-# key file created under umask 077 makes the PostgreSQL repository "not signed" and provisioning stops.
+# Provision under an explicit umask 022, whatever the caller's: apt reads the downloaded repository key as its
+# unprivileged _apt user, so a key file created under umask 077 makes the PostgreSQL repository "not signed" and
+# provisioning stops. OUT and WORK stay private (mode 700 above).
+umask 022
 OUT="$OUT" WORK="$WORK" sh "$SRC/lab/setup_guest.sh"
 umask 077
 
