@@ -890,12 +890,15 @@ SELECT session_user = current_user AS same_user,
 def _check_database_identity(config) -> None:
     """The runtime role must be a plain login with no path to Voalack's protected objects: no
     superuser/CREATEROLE/BYPASSRLS, no membership or ADMIN path to voalack_admin, not the
-    database owner, and no ownership of, CREATE on, or write privilege on schema voalack."""
+    database owner, and no ownership of, CREATE on, or write privilege on schema voalack.
+
+    It connects as Alerta does, with ``DATABASE_NAME`` overriding the URL's database, so it checks
+    the database Alerta actually uses (audit 2026-11-08, finding 8)."""
     dsn = config.get("DATABASE_URL")
     if not isinstance(dsn, str) or not dsn.startswith(("postgres://", "postgresql://")):
         raise RuntimeError("voalack: requires Alerta's PostgreSQL backend")
     try:
-        with psycopg2.connect(dsn) as conn, conn.cursor() as cur:
+        with psycopg2.connect(dsn=dsn, dbname=config.get("DATABASE_NAME")) as conn, conn.cursor() as cur:
             cur.execute(IDENTITY_CHECK)
             same_user, *powers = cur.fetchone()
         conn.close()
