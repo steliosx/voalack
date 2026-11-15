@@ -46,7 +46,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: core-evidence-${{ github.sha }}
+          name: core-evidence-${{ github.sha }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
+          if-no-files-found: error
           path: ${{ runner.temp }}/evidence
           retention-days: 90
 
@@ -80,7 +81,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: envelope-evidence-${{ github.sha }}
+          name: envelope-evidence-${{ github.sha }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
+          if-no-files-found: error
           path: ${{ runner.temp }}/evidence
           retention-days: 90
 
@@ -114,7 +116,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: launcher-evidence-${{ github.sha }}
+          name: launcher-evidence-${{ github.sha }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
+          if-no-files-found: error
           path: ${{ runner.temp }}/evidence
           retention-days: 90
 
@@ -161,24 +164,28 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: secrets-evidence-${{ github.sha }}
+          name: secrets-evidence-${{ github.sha }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
+          if-no-files-found: error
           path: ${{ runner.temp }}/evidence
           retention-days: 3
 
   capture:
     # The full capture suite: real PostgreSQL 18.7 (PGDG) and Alerta 9.1.0, as lab/run_capture.sh runs it in a
-    # disposable microVM. Push runs only: they test the exact head a review names, and a pull request run (GitHub's
-    # merge commit) would repeat about an hour of work for the same branch.
+    # disposable microVM. Push runs of this repository only (bound by its ID, so a copy of this workflow in a fork does
+    # not run it): they test the exact head a review names, and a pull request run (GitHub's merge commit) would repeat
+    # about an hour of work for the same branch. Pull requests never reach this job, so it has no fork-PR step.
     name: full capture suite (PostgreSQL 18.7, Alerta 9.1.0)
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.repository_id == '1442050691'
     runs-on: ubuntu-24.04
     timeout-minutes: 150
     container:
       # python:3.12.14-slim-bookworm, the image the microVM runs use, pinned to the index digest Docker Hub served on
       # 2026-11-15. The job runs as root in the container, as the lab guest does. --shm-size: Docker's default 64 MiB
       # /dev/shm is smaller than a guest's, and PostgreSQL keeps its dynamic shared memory there. SYS_ADMIN with
-      # AppArmor unconfined: the anchor full-disk test mounts a 64 KiB tmpfs and would otherwise skip. Only this
-      # disposable runner is affected; the job holds no secrets and a read-only token.
+      # AppArmor unconfined is needed because the anchor full-disk test mounts a 64 KiB tmpfs and would otherwise skip,
+      # but every step of this job runs with it: treat the whole hosted VM as expendable. The job takes synthetic inputs
+      # only and holds no secrets, OIDC or credentials beyond the read-only token. Never extend this to other jobs, and
+      # never replace it with --privileged or a disabled seccomp profile.
       image: python@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e
       options: --shm-size=1g --cap-add SYS_ADMIN --security-opt apparmor=unconfined
     steps:
@@ -193,8 +200,20 @@ jobs:
           OUT: /out
           WORK: /work
         run: |
-          python3 --version
-          mkdir /work
+          mkdir /out /work
+          {
+            echo "repository_id $GITHUB_REPOSITORY_ID"
+            echo "event $GITHUB_EVENT_NAME"
+            echo "sha $GITHUB_SHA"
+            echo "workflow_ref $GITHUB_WORKFLOW_REF"
+            echo "run $GITHUB_RUN_ID attempt $GITHUB_RUN_ATTEMPT job $GITHUB_JOB"
+            echo "runner $RUNNER_OS $RUNNER_ARCH image ${ImageOS:-unrecorded} ${ImageVersion:-unrecorded}"
+            echo "container_image python@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e (declared)"
+            uname -srvmo
+            grep '^PRETTY_NAME=' /etc/os-release
+            python3 --version
+          } > /out/ci-environment.txt
+          cat /out/ci-environment.txt
           sh lab/run_capture.sh
       - name: Refuse skipped or missing tests
         # A skipped test is not a pass (CONTRIBUTING.md): the job fails unless every collected test ran and passed.
@@ -203,10 +222,13 @@ jobs:
           import sys
           import xml.etree.ElementTree as ET
           root = ET.parse("/out/test-results.xml").getroot()
-          suite = root if root.tag == "testsuite" else root.find("testsuite")
-          counts = {k: int(suite.get(k, "0")) for k in ("tests", "failures", "errors", "skipped")}
-          print("junit:", counts)
-          if counts["tests"] == 0 or counts["failures"] or counts["errors"] or counts["skipped"]:
+          suites = [root] if root.tag == "testsuite" else root.findall("testsuite")
+          totals = {k: sum(int(s.get(k, "0")) for s in suites) for k in ("tests", "failures", "errors", "skipped")}
+          cases = [c for s in suites for c in s.iter("testcase")]
+          not_passed = [c for c in cases if any(c.find(t) is not None for t in ("failure", "error", "skipped"))]
+          print("junit: suites", len(suites), "totals", totals, "testcases", len(cases), "not passed", len(not_passed))
+          if (not suites or totals["tests"] == 0 or len(cases) != totals["tests"] or not_passed
+                  or totals["failures"] or totals["errors"] or totals["skipped"]):
               sys.exit("capture suite: not every collected test ran and passed")
           PY
       - name: Show the test summary
@@ -220,6 +242,13 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: capture-evidence-${{ github.sha }}
-          path: /out
+          name: capture-evidence-${{ github.sha }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
+          if-no-files-found: error
+          # Explicit patterns: a file of any other kind that a test writes under /out is not published.
+          path: |
+            /out/*.txt
+            /out/*.json
+            /out/*.jsonl
+            /out/*.log
+            /out/test-results.xml
           retention-days: 90

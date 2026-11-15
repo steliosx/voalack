@@ -21,22 +21,30 @@ The `capture` job runs `lab/run_capture.sh` unchanged, in a `python:3.12.14-slim
 PostgreSQL 18.7 from PGDG, with the version and repository key checked by `lab/setup_guest.sh`, and Alerta from the
 pinned profile, then runs every test in `tests/capture`.
 
-- **Pushes only.** It runs for pushes to `main` and `vo/**`, which test the exact head a review names. It does not run
-  for pull requests: the push of the same branch already covers it, and a run on GitHub's merge commit would repeat
-  about an hour of work.
+- **Pushes of this repository only.** It runs for pushes to `main` and `vo/**`, which test the exact head a review
+  names, and only when the repository ID is this repository's, so a copy of the workflow in a fork does not run it. It
+  never runs for pull requests: the push of the same branch already covers it, and a run on GitHub's merge commit
+  would repeat about an hour of work. A skipped pull request instance of this job is not evidence for anything.
 - **Container options.** `--shm-size=1g`, because Docker's default 64 MiB `/dev/shm` is smaller than a guest's and
-  PostgreSQL keeps its dynamic shared memory there. `--cap-add SYS_ADMIN` with AppArmor unconfined, so that the
-  anchor full-disk test can mount its 64 KiB tmpfs instead of skipping. These widen only this disposable runner's
-  container, and the job holds no secrets and a read-only token.
-- **No skips.** After the suite, the job fails unless the JUnit report shows at least one test, and no failures,
-  errors or skips. A skipped test is not a pass.
-- **Evidence.** The job uploads `/out` (pytest output, JUnit report, profile checks, dependency freezes, PostgreSQL
-  version and a bounded server log) as `capture-evidence-<sha>`, kept for 90 days. When a review relies on a run, its
-  artifact is downloaded and hashed into the project's record, because GitHub expires artifacts. A green job does not
-  replace the exact-head review.
+  PostgreSQL keeps its dynamic shared memory there. `--cap-add SYS_ADMIN` with AppArmor unconfined, because the anchor
+  full-disk test mounts a 64 KiB tmpfs and would otherwise skip. Every step of the job runs with this widened
+  container, not only that test, so the whole hosted VM is treated as expendable: the job takes synthetic inputs only
+  and holds no secrets, OIDC or credentials beyond the read-only token. Other jobs do not get these options.
+- **No skips.** After the suite, the job reads every suite in the JUnit report and fails unless there is at least one
+  test, the testcase count matches the suites' totals, and no testcase failed, errored or was skipped. A skipped test
+  is not a pass. The number of tests is not fixed; a change to it is part of the reviewed change.
+- **Evidence.** The job records its repository ID, event, commit, workflow, run, attempt, runner and declared image in
+  `ci-environment.txt`, and uploads the files in `/out` matching `*.txt`, `*.json`, `*.jsonl`, `*.log` and
+  `test-results.xml` (that file, pytest output, JUnit report, profile checks, dependency freezes, probe witnesses,
+  PostgreSQL version and a bounded server log) as `capture-evidence-<sha>-run<id>-attempt<n>`, kept for 90 days. Other
+  kinds of file are not published, and finding no files fails the upload. When a review relies on a run, its artifact is downloaded, checked
+  against the API digest, and hashed into the project's record, because GitHub expires artifacts. A green job does
+  not replace the exact-head review. Matching versions and results show that the suite behaves the same here as in a
+  microVM; they do not make a container and a microVM equivalent in isolation, kernel, filesystem or timing.
 
-- **Fork pull requests: a guard, not a boundary.** The first step of every job fails a pull request from a fork
-  before checkout. A fork pull request can edit this workflow, guard included, so the guard only stops an unmodified
+- **Fork pull requests: a guard, not a boundary.** In every job that runs for pull requests, the first step fails a
+  pull request from a fork before checkout. The `capture` job never runs for pull requests (its job-level condition
+  admits only pushes of this repository's ID), so it has no such step. A fork pull request can edit this workflow, guard included, so the guard only stops an unmodified
   workflow. The boundary is elsewhere: jobs run on GitHub's disposable hosted runners (never a maintainer machine),
   the token is read-only and no repository secrets are used. On 6 November 2026 the repository's
   outside-contributor approval policy was independently read as `first_time_contributors`, not
