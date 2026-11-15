@@ -12,6 +12,28 @@ Since 2026-10-30 (owner direction), the CI jobs run on GitHub-hosted `ubuntu-24.
 | `envelope` | `ci/run_envelope_tests.sh` | Builds the wheels and runs the signed-envelope tests against the installed `voalack` wheel |
 | `launcher` | `ci/run_launcher_tests.sh` | Launcher polling, cleanup verification and failure paths, against fake `gh` and `smolvm` |
 | `secrets` | `ci/run_secret_scan.sh` | Pinned gitleaks 8.24.3 over the history, the current tree and the members of the current archives (see Secret scan) |
+| `capture` | `lab/run_capture.sh` | The full capture suite with PostgreSQL 18.7 and Alerta 9.1.0, in a pinned container; pushes only (see Capture suite) |
+
+## Capture suite
+
+The `capture` job runs `lab/run_capture.sh` unchanged, in a `python:3.12.14-slim-bookworm` container pinned by digest
+(the image the microVM runs use). The job runs as root inside the container, as the lab guest does: it installs
+PostgreSQL 18.7 from PGDG, with the version and repository key checked by `lab/setup_guest.sh`, and Alerta from the
+pinned profile, then runs every test in `tests/capture`.
+
+- **Pushes only.** It runs for pushes to `main` and `vo/**`, which test the exact head a review names. It does not run
+  for pull requests: the push of the same branch already covers it, and a run on GitHub's merge commit would repeat
+  about an hour of work.
+- **Container options.** `--shm-size=1g`, because Docker's default 64 MiB `/dev/shm` is smaller than a guest's and
+  PostgreSQL keeps its dynamic shared memory there. `--cap-add SYS_ADMIN` with AppArmor unconfined, so that the
+  anchor full-disk test can mount its 64 KiB tmpfs instead of skipping. These widen only this disposable runner's
+  container, and the job holds no secrets and a read-only token.
+- **No skips.** After the suite, the job fails unless the JUnit report shows at least one test, and no failures,
+  errors or skips. A skipped test is not a pass.
+- **Evidence.** The job uploads `/out` (pytest output, JUnit report, profile checks, dependency freezes, PostgreSQL
+  version and a bounded server log) as `capture-evidence-<sha>`, kept for 90 days. When a review relies on a run, its
+  artifact is downloaded and hashed into the project's record, because GitHub expires artifacts. A green job does not
+  replace the exact-head review.
 
 - **Fork pull requests: a guard, not a boundary.** The first step of every job fails a pull request from a fork
   before checkout. A fork pull request can edit this workflow, guard included, so the guard only stops an unmodified
@@ -49,9 +71,9 @@ and anything the gitleaks rules do not describe.
 
 ## Disposable microVM runs (local)
 
-The full capture suite (PostgreSQL 18.7 and Alerta 9.1.0) and recorded qualification runs do not run on hosted
-runners. They run in disposable microVMs on a maintainer host, with recorded evidence. The on-demand launcher
-below is kept for those runs and for its own tests; no workflow targets the `voalack` label any more.
+Targeted test subsets, the beta demonstration (`lab/run_beta_demo.sh`) and recorded qualification runs still run in
+disposable microVMs on a maintainer host, with recorded evidence. The full capture suite can also run there, with the
+same script. The on-demand launcher below is kept for its own tests; no workflow targets the `voalack` label any more.
 
 ### How a launcher job runs
 
