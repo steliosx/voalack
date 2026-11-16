@@ -2,7 +2,7 @@
 
 ## Status
 
-Voalack is a beta-stage project. It is implemented and tested against a fake Veeam ONE provider only; live use is
+Voalack is in early development. It is implemented and tested against a fake Veeam ONE provider only; live use is
 not qualified (see README.md). No version is endorsed for production, and no response-time commitment exists yet.
 
 ## Reporting a vulnerability

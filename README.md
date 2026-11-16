@@ -17,6 +17,8 @@
 > [!IMPORTANT]
 > **Development, not qualified for use.** The capture boundary and the durable delivery ledger are implemented and tested against a **loopback fake Veeam ONE provider** only. No real Veeam ONE has been contacted, live writes stay disabled, and no installable release exists. The recorded 32-test result covers only the **original synchronous ACK MVP**.
 
+**Current state (15 November 2026):** `NOT_LIVE_VALIDATED`. There is no release and no tag. `main` is the fake-provider preparation candidate, with the first audit follow-up fixes ([PR #17](https://github.com/steliosx/voalack/pull/17)); other audit findings remain open. Draft [PR #7](https://github.com/steliosx/voalack/pull/7) records the synthetic beta trial and the remaining qualification gates. Hosted CI runs the full capture suite (PostgreSQL 18.7, Alerta 9.1.0) on every push to `main`.
+
 ## What it does
 
 Voalack is being developed for Service Desk, engineering and NOC teams that use Alerta as their shared alert console. The existing PowerShell feed brings Veeam ONE alarms into Alerta. The new integration is intended to carry an **authorised human single-alert acknowledgement** back to the exact approved ONE alarm, retaining the operator's context and a clear delivery outcome.
@@ -32,7 +34,7 @@ The integration service account performs the ONE API action; the comment identif
 
 ## Status
 
-Commit identifiers in this README refer to the private development history; this public repository starts from a single snapshot of the reviewed tree. Evidence checked **8 October 2026** at the reviewed S4 commit `759e59c` (earlier stages at `32e72d7`). Each stage below was merged only after independent review of its exact commit. Its PostgreSQL and Alerta tests run in disposable microVMs; that evidence is recorded with each review, outside this repository. The repository's GitHub CI jobs are narrower: they run the ACK-core, envelope and launcher tests only, not the PostgreSQL capture, delivery or recovery suites.
+Commit identifiers in this README refer to the private development history; this public repository starts from a single snapshot of the reviewed tree. Evidence checked **8 October 2026** at the reviewed S4 commit `759e59c` (earlier stages at `32e72d7`). Each stage below was merged only after independent review of its exact commit. Their PostgreSQL and Alerta tests ran in disposable microVMs, and that evidence is recorded with each review, outside this repository. Since 15 November 2026 the repository's hosted CI also runs the full capture suite (PostgreSQL 18.7 and Alerta 9.1.0, in a pinned container) on every push to `main` and `vo/**`, alongside the ACK-core, envelope, launcher and secret-scan jobs.
 
 | Area | State | Evidence and limits |
 | --- | --- | --- |
@@ -41,7 +43,7 @@ Commit identifiers in this README refer to the private development history; this
 | Original ACK MVP reproduction | 32 tests passed | [Report](baseline/BASELINE_REPORT.md). Rebuilt, installed wheel in isolated Linux with a mocked database boundary; not evidence for the new architecture. |
 | Shared ACK core | Implemented; used by Voalack's signed intents | [Core package](packages/ack-core): canonical encoding, signing profiles, validation and typed outcomes; installed-wheel tests in CI. |
 | Zabalack compatibility experiment | Scoped local evidence | [T02 report](compat/t02/README.md); not merged into Zabalack. |
-| Continuous integration | Implemented; scoped checks | GitHub-hosted runners for package and mocked-launcher tests, with a read-only token and no repository secrets. Outside-contributor approval is a separate repository setting; full capture qualification runs in disposable microVMs ([CI design](docs/CI.md)). |
+| Continuous integration | Implemented | GitHub-hosted runners with a read-only token and no repository secrets: ACK-core, envelope and mocked-launcher tests, the secret scan and, on pushes, the full capture suite (PostgreSQL 18.7, Alerta 9.1.0). A ruleset makes `main` pull-request only with four required checks. Recorded qualification runs stay in disposable microVMs ([CI design](docs/CI.md)). |
 | Capture boundary and signed intents (T03b) | Implemented and tested | Real Alerta 9.1.0 and PostgreSQL in the test guest: transaction boundary, authorisation gate, signed intents under a restricted role. [Package notes](packages/voalack/README.md). |
 | Verifier, effect ledger and send path (T04 S1–S3a) | Implemented; fake provider only | One active, lease-fenced verifier claim per capture at a time and at most one promoted effect, one session owner per ONE instance, a one-time dispatch permit, physical-target guards, and retries only after a proven not-sent. Anything possibly sent is held `UNCERTAIN` and never resent. |
 | Reconciliation and settlement (T04 S3b) | Implemented; fake provider only | Read-only reconciliation; automatic settlement only for an attributed read; operator settlement only after containment and quiescence. Nothing returns to `QUEUED`. |
@@ -79,18 +81,23 @@ checks, not a separate whole-repository security review. An independent review i
 The source keeps the early alerts-table lock in schema application.
 Coexistence 3a S1–S3b is present; with those protections installed the supervised
 restore refuses. There is **no supported coexistence-3a restore** and no S3c
-acceptance implied by historical recovery results. Hosted CI does not execute the
-PostgreSQL capture, coexistence, observer, sender or recovery qualification suites.
+acceptance implied by historical recovery results. At that checkpoint, hosted CI did
+not execute the PostgreSQL capture, coexistence, observer, sender or recovery suites;
+it has run them on every push since 15 November 2026 (below).
 
-### Candidate update — 6 November 2026
+### CI and repository protection — 15 November 2026
 
-The dispatch-only Forgehold smoke workflow has been removed from this candidate;
-all remaining workflows use GitHub-hosted runners. This supersedes the source
-change proposed in [PR #1](https://github.com/steliosx/voalack/pull/1), without
-claiming that PR is merged. The repository's outside-contributor approval policy
-was independently read as `first_time_contributors` on 6 November 2026: it does
-not require approval for every outside contributor. See [CI policy](docs/CI.md)
-for the distinction between workflow guards, repository settings and code review.
+All workflows use GitHub-hosted runners. `main` now includes the audit follow-up
+fixes ([PR #17](https://github.com/steliosx/voalack/pull/17)), the PostgreSQL 18.7
+and repository-key pin for the lab ([PR #18](https://github.com/steliosx/voalack/pull/18))
+and the hosted full capture suite ([PR #19](https://github.com/steliosx/voalack/pull/19)),
+which runs on pushes only. A ruleset makes `main` pull-request only, requires the
+`core`, `envelope`, `launcher` and `secrets` checks, and blocks force pushes and
+deletion, with no bypass. Workflows for every outside contributor need approval
+(`all_external_contributors`), only GitHub-owned actions pinned to full SHAs are
+allowed, and private vulnerability reporting and Dependabot alerts are on. The
+self-hosted microVM launcher is dormant. See [CI policy](docs/CI.md) for the
+distinction between workflow guards, repository settings and code review.
 
 The [beta readiness checklist](docs/BETA_READINESS.md) records the remaining
 software, packaging and environment-evidence work. The candidate remains a
@@ -167,7 +174,7 @@ These commands obtain the repository; they do not install or launch Voalack. The
 | --- | --- |
 | [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) | Product, correctness and security requirements |
 | [`docs/CHARTER.md`](docs/CHARTER.md) | The current working model and exact-commit review requirement |
-| [`docs/CI.md`](docs/CI.md) | How CI jobs run on single-use runners in disposable microVMs |
+| [`docs/CI.md`](docs/CI.md) | Hosted CI jobs, the capture suite, repository protection and the dormant microVM launcher |
 | [`inputs/`](inputs/) | Original MVP and PowerShell feed, hashes and redaction record |
 | [`design/`](design/) | Published design, review and agreed amendments, derived from signed records with technical decisions preserved |
 | [`baseline/`](baseline/) | Original MVP reproduction and corrected-runner evidence |
@@ -175,10 +182,10 @@ These commands obtain the repository; they do not install or launch Voalack. The
 | [`packages/voalack/`](packages/voalack/) | The Voalack package: capture boundary, verifier, session owner, reconciliation, settlement, recovery and operator projection |
 | [`tests/`](tests/) | Capture, delivery, recovery and projection tests (real PostgreSQL and Alerta, fake ONE provider), envelope and CI tests |
 | [`lab/`](lab/) | Disposable test-guest setup and runners |
-| [`ci/`](ci/) | CI scripts and the on-demand runner launcher |
+| [`ci/`](ci/) | CI scripts, and the dormant self-hosted runner launcher with its tests |
 | [`compat/t02/`](compat/t02/) | Scoped, local-only Zabalack compatibility procedure and results |
 
-Product builds and tests run in disposable microVMs with synthetic configuration. CI uses short-lived runner credentials and a read-only job token; host credentials and live product credentials stay outside the VM, as described in [the current charter](docs/CHARTER.md). The recorded baseline did not contact a live Veeam ONE or Alerta endpoint. Presentation validation is separate from product tests.
+Product tests run on GitHub-hosted runners (the full capture suite in a pinned container) and, for local qualification, in disposable microVMs, always with synthetic configuration. CI uses a read-only job token and no repository secrets; live product credentials are never used. The recorded baseline did not contact a live Veeam ONE or Alerta endpoint. Presentation validation is separate from product tests.
 
 ## Roadmap
 
