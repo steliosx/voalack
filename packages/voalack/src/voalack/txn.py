@@ -9,14 +9,13 @@ from __future__ import annotations
 
 
 class DeferredCommitConnection:
-    """Delegates to a psycopg2 connection; ``commit()`` is recorded, not executed."""
+    """Delegates to a psycopg2 connection; ``commit()`` is deferred, not executed."""
 
     def __init__(self, conn):
         self._conn = conn
-        self.deferred_commits = 0
 
     def commit(self) -> None:
-        self.deferred_commits += 1
+        """A no-op: the request boundary makes the one real commit (``commit_now``)."""
 
     def rollback(self) -> None:
         self._conn.rollback()
