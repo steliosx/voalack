@@ -1,6 +1,8 @@
 # Continuous integration
 
-CI is a **check, not an approval**: `main` still moves only after VO-ASTRA has reviewed the exact head.
+CI is a **check, not an approval**: `main` moves only by a merge commit of an exact head that has been reviewed.
+The full capture suite must have passed on a push of that exact head; a skipped pull request instance of the job
+does not count.
 
 ## Hosted CI (pushes to main and vo/**; pull requests to main)
 
@@ -46,10 +48,15 @@ pinned profile, then runs every test in `tests/capture`.
   pull request from a fork before checkout. The `capture` job never runs for pull requests (its job-level condition
   admits only pushes of this repository's ID), so it has no such step. A fork pull request can edit this workflow, guard included, so the guard only stops an unmodified
   workflow. The boundary is elsewhere: jobs run on GitHub's disposable hosted runners (never a maintainer machine),
-  the token is read-only and no repository secrets are used. On 6 November 2026 the repository's
-  outside-contributor approval policy was independently read as `first_time_contributors`, not
-  `all_external_contributors`. Do not assume every outside contributor's workflow awaits approval.
+  the token is read-only and no repository secrets are used. Since 15 November 2026 the repository requires approval
+  before workflows run for any outside contributor (`all_external_contributors`; it was `first_time_contributors`).
   This mutable repository setting is separate from the source guard and exact-head code review.
+- **Repository settings (read 15 November 2026).** Only GitHub-owned actions are allowed, and every action must be
+  pinned to a full commit SHA. Private vulnerability reporting and Dependabot alerts are on. A ruleset protects `main`:
+  changes arrive only through a pull request, the `core`, `envelope`, `launcher` and `secrets` checks must pass, force
+  pushes and deletion are blocked, and nobody can bypass it. The `capture` job is not a required check, because a
+  skipped pull request instance of a job satisfies a required check; its push result is checked before a merge
+  instead. These are mutable settings, recorded here as read, not guarantees of the source.
 - **Published evidence.** Every job uploads an explicit list of files or patterns, never a whole directory, so a new
   file a job writes is not published until the list is changed and reviewed. The patterns limit what is published; they
   do not sanitise contents.
@@ -84,7 +91,11 @@ and anything the gitleaks rules do not describe.
 
 Targeted test subsets, the beta demonstration (`lab/run_beta_demo.sh`) and recorded qualification runs still run in
 disposable microVMs on a maintainer host, with recorded evidence. The full capture suite can also run there, with the
-same script. The on-demand launcher below is kept for its own tests; no workflow targets the `voalack` label any more.
+same script. These are local qualification runs, not CI.
+
+**The launcher is dormant.** The on-demand self-hosted launcher described below is suspended for this public
+repository: no workflow targets the `voalack` label, and it is not run. Its code and its tests (the `launcher` job,
+against fakes) remain. The rest of this section describes how it would behave.
 
 ### How a launcher job runs
 
