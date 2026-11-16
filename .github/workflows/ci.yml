@@ -48,7 +48,16 @@ jobs:
         with:
           name: core-evidence-${{ github.sha }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
           if-no-files-found: error
-          path: ${{ runner.temp }}/evidence
+          # Explicit files: anything else the job writes to its evidence directory is not published.
+          path: |
+            ${{ runner.temp }}/evidence/run.log
+            ${{ runner.temp }}/evidence/pytest.txt
+            ${{ runner.temp }}/evidence/pytest-exit.txt
+            ${{ runner.temp }}/evidence/test-results.xml
+            ${{ runner.temp }}/evidence/import-path.txt
+            ${{ runner.temp }}/evidence/pip-freeze.txt
+            ${{ runner.temp }}/evidence/pip-version.txt
+            ${{ runner.temp }}/evidence/dist/*.whl
           retention-days: 90
 
   envelope:
@@ -83,7 +92,16 @@ jobs:
         with:
           name: envelope-evidence-${{ github.sha }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
           if-no-files-found: error
-          path: ${{ runner.temp }}/evidence
+          # Explicit files: anything else the job writes to its evidence directory is not published.
+          path: |
+            ${{ runner.temp }}/evidence/run.log
+            ${{ runner.temp }}/evidence/pytest.txt
+            ${{ runner.temp }}/evidence/pytest-exit.txt
+            ${{ runner.temp }}/evidence/test-results.xml
+            ${{ runner.temp }}/evidence/import-path.txt
+            ${{ runner.temp }}/evidence/pip-freeze.txt
+            ${{ runner.temp }}/evidence/pip-version.txt
+            ${{ runner.temp }}/evidence/dist/*.whl
           retention-days: 90
 
   launcher:
@@ -118,7 +136,12 @@ jobs:
         with:
           name: launcher-evidence-${{ github.sha }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
           if-no-files-found: error
-          path: ${{ runner.temp }}/evidence
+          # Explicit files: anything else the job writes to its evidence directory is not published.
+          path: |
+            ${{ runner.temp }}/evidence/run.log
+            ${{ runner.temp }}/evidence/pytest.txt
+            ${{ runner.temp }}/evidence/pytest-exit.txt
+            ${{ runner.temp }}/evidence/test-results.xml
           retention-days: 90
 
   secrets:
@@ -166,7 +189,15 @@ jobs:
         with:
           name: secrets-evidence-${{ github.sha }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
           if-no-files-found: error
-          path: ${{ runner.temp }}/evidence
+          # Explicit files: anything else the job writes to its evidence directory is not published.
+          path: |
+            ${{ runner.temp }}/evidence/run.log
+            ${{ runner.temp }}/evidence/scan-status.txt
+            ${{ runner.temp }}/evidence/history.json
+            ${{ runner.temp }}/evidence/tree.json
+            ${{ runner.temp }}/evidence/archives.json
+            ${{ runner.temp }}/evidence/archives-manifest.json
+            ${{ runner.temp }}/evidence/archives-scan.log
           retention-days: 3
 
   capture:

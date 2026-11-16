@@ -39,8 +39,8 @@ pinned profile, then runs every test in `tests/capture`.
   PostgreSQL version and a bounded server log) as `capture-evidence-<sha>-run<id>-attempt<n>`, kept for 90 days. Other
   kinds of file are not published, and finding no files fails the upload. When a review relies on a run, its artifact is downloaded, checked
   against the API digest, and hashed into the project's record, because GitHub expires artifacts. A green job does
-  not replace the exact-head review. Matching versions and results show that the suite behaves the same here as in a
-  microVM; they do not make a container and a microVM equivalent in isolation, kernel, filesystem or timing.
+  not replace the exact-head review. Matching versions and results are comparable observed suite results; they do not
+  make a container and a microVM equivalent in isolation, kernel, filesystem or timing, or establish untested behaviour.
 
 - **Fork pull requests: a guard, not a boundary.** In every job that runs for pull requests, the first step fails a
   pull request from a fork before checkout. The `capture` job never runs for pull requests (its job-level condition
@@ -50,6 +50,9 @@ pinned profile, then runs every test in `tests/capture`.
   outside-contributor approval policy was independently read as `first_time_contributors`, not
   `all_external_contributors`. Do not assume every outside contributor's workflow awaits approval.
   This mutable repository setting is separate from the source guard and exact-head code review.
+- **Published evidence.** Every job uploads an explicit list of files or patterns, never a whole directory, so a new
+  file a job writes is not published until the list is changed and reviewed. The patterns limit what is published; they
+  do not sanitise contents.
 - **Least privilege.** The workflow token is read-only (`contents: read`), checkouts do not persist credentials, and
   every action is pinned to a full commit SHA.
 - **No self-hosted workflow.** The dispatch-only `forgehold-smoke` workflow has been removed from this
