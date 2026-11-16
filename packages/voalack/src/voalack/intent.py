@@ -22,8 +22,9 @@ from . import envelope as v2
 
 LOG = logging.getLogger("voalack.intent")
 
-MAX_CAPTURE_SECONDS = 60
-MAX_EXECUTION_SECONDS = 4 * 3600
+# The configurable windows are capped by the envelope's own limits, in whole seconds (ints).
+MAX_CAPTURE_SECONDS = v2.MAX_CAPTURE_WINDOW // timedelta(seconds=1)
+MAX_EXECUTION_SECONDS = v2.MAX_EXECUTION_WINDOW // timedelta(seconds=1)
 
 
 @dataclass(frozen=True)
