@@ -117,6 +117,59 @@ do not use the historical pre-3a recovery sequence or destructive SQL as a reset
 Install/remove/rollback and installed two-product coexistence tests remain explicit
 [first-candidate requirements](REQUIREMENTS.md#4-first-candidate).
 
+**Upgrade limit: protected objects cannot change.** This candidate has no
+supported upgrade path for its protected database objects, including changes
+made by a later Voalack release. This is deliberate protection, not a bug.
+
+At first install, `schema.apply` records the protected objects once, from
+definitions shipped in the package, not from the live database. Nothing in this
+candidate rewrites that record. For each protected function it records a digest
+of the body, the language, owner, security mode, settings, grants and
+volatility. It also records the four Voalack triggers on `public.alerts`, the
+two event triggers and whether they are enabled, the two named triggers on
+`voalack.bindings` and `voalack.binding_revisions`, every table, index and
+sequence in the `voalack_guard` and `voalack_lifetime` schemas with its owner
+and grants, their columns, constraints and triggers, and those two schemas'
+owner and grants.
+
+Two checks hold the installed objects to that record:
+
+- While enabled, the event triggers refuse DDL that would change a recorded
+  attribute, remove a recorded object, or add a table, index, sequence or
+  trigger in the two protected schemas, a column or constraint to their tables,
+  or a Voalack trigger on `public.alerts`.
+  This applies to every user, superusers included. Commands on the event
+  triggers themselves are not checked this way.
+- `schema.apply` compares the installed objects with the record before it
+  changes anything. At the end it requires the record to equal the packaged
+  expectation of the release being applied, and the installed objects to match
+  the record. Any difference refuses the whole apply and nothing is committed.
+
+So a later release that changes a recorded attribute, for example a corrected
+function body, a new grant on a protected function or a new column in a
+protected table, cannot be applied to a database where this candidate is
+installed. Re-applying the same candidate to an intact installation still works.
+Maintenance permits are not an upgrade route: they only let a recovery window's
+registered coordinator drop the four Voalack triggers on `public.alerts` and
+recreate them in their recorded form.
+
+A controlled upgrade step is planned for a later candidate. It does not exist
+yet. Until it does:
+
+- do not disable or drop the event triggers, or bypass the protection in any
+  other way, to install a change;
+- do not edit the guard's tables or the system catalogs, and do not use
+  destructive SQL, such as dropping the protected schemas or objects, to make
+  room for a new release;
+- keep the refusal message for review.
+
+Any difference from the record also makes Voalack refuse ACKs of bound alerts
+with `503`, pause pending projection and refuse every later apply.
+
+Not verified: no later release exists, so no upgrade from this candidate has
+been tried. Whether a release that changes only objects outside the record
+would apply cleanly is untested.
+
 ## Evidence to retain and review
 
 Keep the source commit/tree/archive identity; four distribution files and their
