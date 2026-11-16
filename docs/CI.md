@@ -67,6 +67,30 @@ pinned profile, then runs every test in `tests/capture`.
   disconnected from this public repository; source guards do not safely isolate an attached runner from
   contributor-controlled workflows. Adding a runner or dispatch route requires its own review and authority.
 
+## Security scans (informational)
+
+A separate workflow, `.github/workflows/security.yml`, runs on the same events as CI, with the same fork guard,
+read-only token and SHA-pinned actions. It is **not a required check**: for at least its first month a finding is
+recorded and reviewed, but it does not block a merge by itself.
+
+| Job | Tool | What it reads |
+| --- | --- | --- |
+| `pip-audit` | pip-audit 2.10.1, installed into its own venv at that exact version (its own dependencies resolve unpinned at run time) | The three locked lab profiles in `lab/profiles/`, audited as listed (`--no-deps --disable-pip`; nothing is installed). The two local projects in the final profiles are not on PyPI and are reported as skipped. |
+| `zizmor` | zizmor 1.31.1, installed from its dependency-free wheel pinned by SHA-256 (`--require-hashes`) | The files in `.github/workflows/`, offline: no GitHub API calls and no token. |
+
+Each job publishes only its own `*.txt` reports, for 30 days. CodeQL default setup also runs, as a repository
+setting (read 16 November 2026: configured, `actions` and `python`, default query suite); its results are in the
+Security tab, visible to maintainers only.
+
+What a finding means:
+- A known advisory against a **lab profile dependency** is a public advisory about a test dependency, not a Voalack
+  vulnerability. It is recorded. The profile changes only through its qualification route, with a new pinned profile
+  and a full capture run, never by a silent version bump.
+- A **zizmor** finding in this repository's workflows is fixed, or recorded with the reason it is judged a false
+  alarm. It is not hidden with an ignore file.
+- A hole in **Voalack's own code or trust boundaries**, from CodeQL or anything else, is reported through private
+  vulnerability reporting (`SECURITY.md`), never in an issue or a pull request.
+
 ## Secret scan
 
 The `secrets` job downloads gitleaks 8.24.3, checks its SHA-256 against the release checksum file, and runs three

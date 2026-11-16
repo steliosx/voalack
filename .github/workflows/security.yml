@@ -1,0 +1,106 @@
+# Voalack security scans: known-vulnerable Python dependencies in the locked lab profiles (pip-audit) and risky
+# GitHub Actions patterns (zizmor). Informational: not a required check, so a finding never blocks a merge by itself.
+# A real vulnerability found here is reported through private vulnerability reporting, never an issue or a PR.
+# CodeQL default setup runs separately (repository setting). See docs/CI.md.
+name: security
+
+on:
+  push:
+    branches: [main, "vo/**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  pip-audit:
+    name: pip-audit 2.10.1 (locked lab profiles)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Refuse a fork pull request before checkout
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo "fork pull request: refused by this workflow; a maintainer reruns it from a branch after review" >&2
+          exit 1
+      - name: Check out the exact commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pip-audit at a fixed version
+        run: |
+          python3 -m venv "$RUNNER_TEMP/audit"
+          "$RUNNER_TEMP/audit/bin/pip" install -q "pip-audit==2.10.1"
+          mkdir "$RUNNER_TEMP/evidence"
+          "$RUNNER_TEMP/audit/bin/pip-audit" --version | tee "$RUNNER_TEMP/evidence/pip-audit-version.txt"
+      - name: Audit the locked profiles
+        # Each profile pins exact versions, so they are audited as listed (--no-deps), without installing anything
+        # (--disable-pip). The two local projects in the final profiles are not on PyPI and are reported as skipped.
+        run: |
+          status=0
+          for p in qualified-setup qualified-final beta-demo-final; do
+            echo "== lab/profiles/$p.txt"
+            "$RUNNER_TEMP/audit/bin/pip-audit" --requirement "lab/profiles/$p.txt" --no-deps --disable-pip \
+              --progress-spinner off --desc on > "$RUNNER_TEMP/evidence/pip-audit-$p.txt" 2>&1 || status=1
+            cat "$RUNNER_TEMP/evidence/pip-audit-$p.txt"
+          done
+          echo "pip-audit status: $status" | tee "$RUNNER_TEMP/evidence/pip-audit-status.txt"
+          exit "$status"
+      - name: Keep the evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pip-audit-evidence-${{ github.sha }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/evidence/pip-audit-*.txt
+          retention-days: 30
+
+  zizmor:
+    name: zizmor 1.31.1 (GitHub Actions workflows)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Refuse a fork pull request before checkout
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo "fork pull request: refused by this workflow; a maintainer reruns it from a branch after review" >&2
+          exit 1
+      - name: Check out the exact commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install zizmor at a fixed version and hash
+        # zizmor 1.31.1 has no Python dependencies; this is its PyPI manylinux_2_28 x86_64 wheel's SHA-256.
+        run: |
+          test "$(uname -m)" = x86_64
+          python3 -m venv "$RUNNER_TEMP/zizmor"
+          printf '%s\n' "zizmor==1.31.1 --hash=sha256:58e878eb2dbd2c6183c105e1ac28c14f7dd1eca44a783f1fe2a69647d012c410" \
+            > "$RUNNER_TEMP/zizmor-requirements.txt"
+          "$RUNNER_TEMP/zizmor/bin/pip" install -q --only-binary :all: --require-hashes \
+            -r "$RUNNER_TEMP/zizmor-requirements.txt"
+          mkdir "$RUNNER_TEMP/evidence"
+          "$RUNNER_TEMP/zizmor/bin/zizmor" --version | tee "$RUNNER_TEMP/evidence/zizmor-version.txt"
+      - name: Audit the workflows
+        # --offline: no GitHub API calls and no token; only the checked-out workflow files are read.
+        run: |
+          status=0
+          "$RUNNER_TEMP/zizmor/bin/zizmor" --offline --format plain .github/workflows \
+            > "$RUNNER_TEMP/evidence/zizmor.txt" 2>&1 || status=$?
+          cat "$RUNNER_TEMP/evidence/zizmor.txt"
+          echo "zizmor exit: $status" | tee "$RUNNER_TEMP/evidence/zizmor-status.txt"
+          exit "$status"
+      - name: Keep the evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: zizmor-evidence-${{ github.sha }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/evidence/zizmor*.txt
+          retention-days: 30
