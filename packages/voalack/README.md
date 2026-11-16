@@ -381,6 +381,14 @@ loopback fake (`fake-one/v1`) in the test guest.
   within a short hand-off bound, and fences again before the read-back. It logs in only for an
   attempt that is already durable, and a lost database stops the owner locally at once. Only HTTP
   200 responses can confirm.
+* **Lock timeout before anything is stored.** `start_attempt` is the first step of a send. If one
+  of its lock waits runs past the sender's lock timeout (2 s), its transaction is rolled back with
+  nothing stored (no attempt, guard, budget or backoff change, and no login), and `apply_once`
+  returns `deferred` (`lock_timeout`): the effect is left untouched (still `QUEUED`) for a later
+  pass and the owner keeps running. A fence or configuration change that was waiting behind the
+  lock stops the owner at the next fence. Any other database error in that step, and any database
+  error once the attempt is stored (including the same lock timeout in `consume_dispatch`), still
+  stops the owner.
 * **Outcomes.** Only an attributable fake success (operation id equal to the request digest and a
   matching read-back) is `REMOTE_CONFIRMED`. Everything else after dispatch, a crash after
   consumption, an unknown consume COMMIT and attempts left by a contained owner are `UNCERTAIN`;
@@ -393,7 +401,8 @@ readiness checks as the verifier with its own profile. Readiness also refuses an
 column or sequence) outside a profile's listed reads.
 
 Tests: `tests/capture/test_t04_s2_sender.py` with the loopback fake provider in
-`tests/capture/fake_one.py`.
+`tests/capture/fake_one.py`; the lock timeout before anything is stored in
+`tests/capture/test_audit5_start_lock_timeout.py`.
 
 ## Transport, not-sent and retry (T04 S3a; fake ONE provider only)
 

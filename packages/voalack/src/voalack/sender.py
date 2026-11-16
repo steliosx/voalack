@@ -29,6 +29,7 @@ from typing import Any, Callable, Mapping, Optional
 from urllib.parse import urlsplit
 
 import psycopg2
+import psycopg2.errors
 import psycopg2.extras
 
 from . import recovery, verifier
@@ -782,8 +783,19 @@ class OwnerSession:
     def _apply(self, effect_id: int, attempt_id: str, result: dict) -> dict:
         # 1. A durable, eligible attempt before any credential or network use (S2-R3).
         cur = self._cursor()
-        cur.execute("SELECT * FROM voalack.start_attempt(%s, %s, %s, %s, %s)",
-                    (attempt_id, effect_id, self.instance_id, self.generation, self.incarnation))
+        try:
+            cur.execute("SELECT * FROM voalack.start_attempt(%s, %s, %s, %s, %s)",
+                        (attempt_id, effect_id, self.instance_id, self.generation, self.incarnation))
+        except psycopg2.errors.LockNotAvailable:
+            # Audit finding 5: a lock wait in this first statement ran past lock_timeout. The
+            # statement failed before its COMMIT, the attempt id is new to this call, and
+            # start_attempt has no effect outside its transaction, so nothing is stored: no
+            # attempt, guard, budget or backoff change, journal entry, permit or login. Roll back
+            # and leave this one effect untouched for a later pass; the owner keeps running. A
+            # failed rollback, any other error here, and any error once the attempt is stored
+            # still stop the owner (apply_once).
+            cur.connection.rollback()
+            return {**result, "outcome": "deferred", "reason": "lock_timeout"}
         started = cur.fetchone()
         try:
             self._commit("start")
