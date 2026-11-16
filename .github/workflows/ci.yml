@@ -204,9 +204,11 @@ jobs:
     # The full capture suite: real PostgreSQL 18.7 (PGDG) and Alerta 9.1.0, as lab/run_capture.sh runs it in a
     # disposable microVM. Push runs of this repository only (bound by its ID, so a copy of this workflow in a fork does
     # not run it): they test the exact head a review names, and a pull request run (GitHub's merge commit) would repeat
-    # about an hour of work for the same branch. Pull requests never reach this job, so it has no fork-PR step.
+    # about an hour of work for the same branch. Pull requests never reach this job, so it has no fork-PR step. Pushes
+    # to vo/integration are skipped: that branch is only ever fast-forwarded to main's merge commit, so its run would
+    # repeat main's on an identical tree.
     name: full capture suite (PostgreSQL 18.7, Alerta 9.1.0)
-    if: github.event_name == 'push' && github.repository_id == '1442050691'
+    if: github.event_name == 'push' && github.repository_id == '1442050691' && github.ref != 'refs/heads/vo/integration'
     runs-on: ubuntu-24.04
     timeout-minutes: 150
     container:
@@ -282,4 +284,99 @@ jobs:
             /out/*.jsonl
             /out/*.log
             /out/test-results.xml
+          retention-days: 90
+
+  setup-pins:
+    # Negative controls for the two pins lab/setup_guest.sh enforces before any test runs: the PGDG repository key
+    # fingerprint and the PostgreSQL server version. Each case runs a copy of the script with exactly one pinned value
+    # changed, and passes only if provisioning stops at that check with its exact message. A download or provisioning
+    # failure does not produce that message, so it fails the case. The capture job is the positive control: it runs the
+    # unchanged script. Same condition and image as capture, without its widened container options. Not a required
+    # check.
+    name: setup pin negatives (key fingerprint, server version)
+    if: github.event_name == 'push' && github.repository_id == '1442050691' && github.ref != 'refs/heads/vo/integration'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        case: [key, version]
+    container:
+      # The capture job's image (python:3.12.14-slim-bookworm, pinned by digest); it runs as root, as setup expects.
+      image: python@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e
+    steps:
+      - name: Check out the exact commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run setup with one pin changed and check where it stops
+        # The evidence directory is a fixed container path, as /out is in the capture job, so the upload reads it as is.
+        env:
+          CASE: ${{ matrix.case }}
+          EV: /evidence
+        run: |
+          mkdir -p "$EV/out" "$RUNNER_TEMP/work"
+          case "$CASE" in
+            key)
+              old=B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+              new=0000000000000000000000000000000000000000
+              sed "s/^PGDG_KEY_FPR=$old\$/PGDG_KEY_FPR=$new/" lab/setup_guest.sh > "$RUNNER_TEMP/neg.sh"
+              want="PGDG repository key is not $new (got: $old)"
+              ;;
+            version)
+              sed '/pg_num" = 180007/s/180007/180006/g' lab/setup_guest.sh > "$RUNNER_TEMP/neg.sh"
+              want='PostgreSQL server_version_num is 180007, not 180006 (18.7)'
+              ;;
+            *)
+              echo "unknown case: $CASE" >&2
+              exit 2
+              ;;
+          esac
+          fail=
+          # The copy differs from the reviewed script in exactly one line.
+          diff lab/setup_guest.sh "$RUNNER_TEMP/neg.sh" > "$EV/diff.txt" && rc=0 || rc=$?
+          cat "$EV/diff.txt"
+          [ "$rc" = 1 ] || fail="$fail diff-exit-$rc"
+          [ "$(grep -c '^<' "$EV/diff.txt")" = 1 ] || fail="$fail diff-removed-lines"
+          [ "$(grep -c '^>' "$EV/diff.txt")" = 1 ] || fail="$fail diff-added-lines"
+          # Setup must fail with the pinned check's exact message.
+          OUT="$EV/out" WORK="$RUNNER_TEMP/work" sh "$RUNNER_TEMP/neg.sh" > "$EV/setup.txt" 2>&1 && rc=0 || rc=$?
+          echo "setup exit: $rc"
+          [ "$rc" != 0 ] || fail="$fail setup-succeeded"
+          grep -Fxq "$want" "$EV/setup.txt" || fail="$fail stop-message"
+          # It stopped at that check, not before it and not after it.
+          case "$CASE" in
+            key)
+              [ ! -e /usr/lib/postgresql/18/bin/postgres ] || fail="$fail postgres-installed"
+              ;;
+            version)
+              [ -s "$EV/out/pg-version.txt" ] || fail="$fail no-pg-version"
+              [ ! -e "$EV/out/pip-version.txt" ] || fail="$fail pip-version-written"
+              ;;
+          esac
+          if [ -z "$fail" ]; then
+            echo "PASS $CASE: setup exit $rc, stopped at the pinned check with its exact message" > "$EV/verdict.txt"
+          else
+            echo "FAIL $CASE: setup exit $rc; failed:$fail" > "$EV/verdict.txt"
+          fi
+          cat "$EV/verdict.txt"
+          [ -z "$fail" ]
+      - name: Show the summary
+        if: always()
+        run: |
+          echo "tested commit: $GITHUB_SHA (event: $GITHUB_EVENT_NAME)"
+          cat /evidence/verdict.txt 2>/dev/null || echo "no verdict recorded"
+          tail -n 5 /evidence/setup.txt 2>/dev/null || true
+      - name: Keep the evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: setup-pins-${{ matrix.case }}-evidence-${{ github.sha }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
+          if-no-files-found: error
+          # Explicit files and the *.txt files setup wrote to out/: nothing else under /evidence is published.
+          path: |
+            /evidence/diff.txt
+            /evidence/setup.txt
+            /evidence/verdict.txt
+            /evidence/out/*.txt
           retention-days: 90
