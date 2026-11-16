@@ -1,12 +1,12 @@
 # Beta readiness
 
-Source assessment: 6 November 2026, public repository `steliosx/voalack`
-(repository ID `1442050691`), application source at
-`3ca8bb6bd3cb5e86023d65540b85fee011e6c28d`.
-The documentation/workflow cleanup and synthetic demo preparation do not change
-application code or turn historical evidence into new qualification. The new
-[demo payload](../lab/BETA_DEMO.md) is implemented but its native execution is
-**NOT_RUN**; it is not accepted beta evidence.
+Evidence reconciliation: 13 November 2026, public repository `steliosx/voalack`
+(repository ID `1442050691`). The synthetic trial on 8 November used exact source
+`ec989ec8b9238b417a1a6e94b00fd9cfcb633713` and reported wrapper exit `0` and
+`PASS` with qualification `synthetic_only`. Its archive, distribution hashes and
+saved results were independently inspected; this documentation refresh does not
+claim a new execution. See the [trial evidence record](BETA_TRIAL_20261108.md).
+Complete guest-cleanup acceptance and installed/live qualification remain open.
 
 The intended outcome remains the [first candidate requirements](REQUIREMENTS.md#4-first-candidate):
 preserve the feed, capture an authorized human ACK durably, deliver it to the
@@ -22,10 +22,11 @@ for the live-provider and installed-environment gates.
   are implemented. See the [package notes](../packages/voalack/README.md) for
   historical test evidence and limitations.
 - Public hosted CI runs installed ACK-core and envelope tests, mocked-launcher
-  tests and bounded secret scans. Run
-  [41501760593](https://github.com/steliosx/voalack/actions/runs/41501760593)
-  is evidence for the exact public main above; it does not run the PostgreSQL
-  capture, sender, observer, coexistence or recovery suites.
+  tests and bounded secret scans. Exact-source run
+  [42476358118](https://github.com/steliosx/voalack/actions/runs/42476358118)
+  passed on rerun at the trial commit. It does not run the PostgreSQL capture,
+  sender, observer, coexistence or recovery suites. The synthetic native trial
+  is separate evidence; see its record below.
 - `lab/setup_guest.sh`, the qualified dependency profiles and
   `lab/run_capture.sh` provide a synthetic PostgreSQL/Alerta test environment.
   They are guest provisioning/test scripts, not a deployable worker service.
@@ -37,11 +38,11 @@ for the live-provider and installed-environment gates.
 
 | Work | Current evidence | Smallest useful completion evidence |
 | --- | --- | --- |
-| Runnable synthetic assembly | The finite `lab/demo_beta.py` driver and guest wrapper are prepared and statically reviewed; native execution is NOT_RUN. This is not a persistent deployment service. | Run the exact reviewed payload in the coordinated fresh guest. Require its persisted human ACK, exact intent/capture, restricted verification, single fake delivery, projection and uncertainty/no-resend witnesses to pass, and independently verify source/artifact bindings and cleanup. |
-| Candidate distribution bundle | CI builds test wheels. The new demo wrapper prepares both sdist/wheel pairs, but has not run and has produced no candidate bundle. | Build both distributions in the approved guest, retain wheel and sdist bytes and SHA-256 manifest, record exact source/tree and dependency profile, install those exact artifacts in a clean environment and verify imports and packaged SQL/JSON resources. Rebuild from the sdists before asserting their usability. |
-| Installation/lifecycle runbook | [Candidate operations notes](BETA_OPERATIONS.md) now document dependencies, bootstrap order, role/anchor separation, refusals and unsupported removal/restore. They do not provide a persistent service or qualify an installed delivery system. | Verify the documented fresh-guest sequence natively, then supply and test the supported installed lifecycle, including removal/rollback. Preserve unsupported downgrade/restore limits rather than improvising a destructive reset of an existing deployment. |
-| Candidate regression evidence | Historical native results exist; public CI covers only its named jobs. | At the actual integration candidate, record the approved native suite and directly affected critical regressions, exact artifact/source identities, environment/profile, exit statuses and raw case results. Reuse unaffected evidence only with an explicit source/scope comparison. |
-| Operator and owner handoff | [One-page preparation summary](BETA_OWNER_SUMMARY.md) links the exact reviewed payload, scoped CI, runbook and open gates. Candidate distribution artifacts do not exist yet. | Add the actual artifact identities, native results and integration disposition after review. No release/live-ready label until the relevant evidence exists. |
+| Runnable synthetic assembly | The two saved native scenarios report PASS at the trial commit; source/artifact bindings were independently checked. This is not a persistent deployment service. | Complete independent guest/lane cleanup evidence. Preserve the exact trial result; run affected critical regressions for any later implementation candidate. |
+| Candidate distribution bundle | Both wheel/sdist pairs exist for the trial. All four hashes match the saved manifest. The wrapper builds wheels from sdists and installs them without dependency resolution. | Use the retained exact artifacts and profiles for candidate review. Verify packaged resources and installed lifecycle as required; these privately retained files are not a published release or reproducible-build claim. |
+| Installation/lifecycle runbook | The finite synthetic bootstrap ran successfully. The operations notes describe role/anchor separation and unsupported removal/restore; there is no qualified persistent installed delivery system. | Test the supported installed lifecycle, including removal/rollback where offered. Preserve unsupported downgrade/restore limits; never reset a real protected installation to imitate a fresh demo. |
+| Candidate regression evidence | Two synthetic scenarios passed at the exact trial head. Historical native suites and named hosted jobs retain their original scope. | At the next integration candidate, run directly affected critical regressions and record source/overlay identities, environment/profile, raw cases and exit statuses. Reuse unaffected evidence only with a source/scope comparison. |
+| Operator and owner handoff | The owner summary and trial record now identify observed synthetic results, artifact hashes and remaining gates. | Obtain independent review of this documentation change and complete outstanding cleanup/site/lifecycle evidence before broader readiness claims. |
 
 Use targeted critical checks during development and a batch review at the
 integration candidate. Do not require exhaustive new negative-control matrices
@@ -50,7 +51,7 @@ failed or unqualified; a larger pass count does not replace the required behavio
 
 ## Synthetic assembly acceptance sequence
 
-This is the acceptance contract for the prepared, unexecuted [demo command](../lab/BETA_DEMO.md).
+This is the acceptance contract for the [demo command](../lab/BETA_DEMO.md). The recorded trial passed its two scenarios; full acceptance also requires the cleanup evidence described below.
 Run only in the existing approved disposable guest with synthetic data. Do not
 turn the test fixtures into deployment credentials or point them at a real site.
 
