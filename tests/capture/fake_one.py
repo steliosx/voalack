@@ -17,6 +17,15 @@ issued under it whether or not Voalack registered it (a login whose token arrive
 ``POST /lab/credentials/{cred}/revoke`` -> {"credential", "revoked"} and
 ``GET /lab/credentials/{cred}/executing`` -> {"credential", "scope": "credential", "live",
 "executing"}. Script ``login_delay`` issues a token only after that many seconds.
+
+Audit 2026-11-08 finding 6 (session loss, opt-in): script ``session`` absent keeps the contract
+above unchanged (alarm reads do not check the session; an ACK of an unknown session is answered 401
+before it executes). ``"expire_once"``: the next alarm read or ACK that presents a session finds
+every live session expired, as after a ONE restart, and is answered 401 without executing; the mode
+then becomes ``"checked"``, in which alarm reads need a live session too, like ACKs.
+``"expire_always"``: every alarm read or ACK that presents a session is answered so (a session never
+outlives its first use). Requests answered 401 for want of a live session are counted in
+``unauthorised``, outside ``counts``.
 """
 import hashlib
 import json
@@ -42,6 +51,7 @@ class FakeOne:
         self.executing = 0                 # ACK requests currently being processed
         self.executing_by_session = {}     # token -> ACK requests currently being processed (lab view)
         self.pre_auth = None               # lab hook: called after an ACK body is read, before auth
+        self.unauthorised = {"reads": 0, "acks": 0}   # answered 401 for want of a live session; never executed
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), self._handler())
         self.server.daemon_threads = True
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
@@ -57,6 +67,18 @@ class FakeOne:
     def __exit__(self, *exc):
         self.server.shutdown()
         self.server.server_close()
+
+    def _accepts(self, token, read=False):
+        """Under the lock: whether an alarm read (``read``) or an ACK may use this session. In an
+        expiry mode a request that presents a session first expires every live session."""
+        mode = self.script.get("session")
+        if mode in ("expire_once", "expire_always") and token:
+            self.sessions.clear()                    # as after a ONE restart
+            if mode == "expire_once":
+                self.script["session"] = "checked"
+        if read and mode is None:
+            return True                              # the unchanged contract: reads do not check
+        return token in self.sessions
 
     def _handler(self):
         fake = self
@@ -134,8 +156,9 @@ class FakeOne:
                         fake.pre_auth()
                     token = self.headers.get("X-Session")
                     with fake.lock:                      # authenticate and register as executing at once
-                        if token not in fake.sessions:
+                        if not fake._accepts(token):
                             authenticated = False
+                            fake.unauthorised["acks"] += 1
                         else:
                             authenticated = True
                             fake.counts["receipts"] += 1
@@ -195,11 +218,17 @@ class FakeOne:
                     if fake.script.get("read_delay"):
                         time.sleep(fake.script["read_delay"])
                     with fake.lock:
-                        fake.counts["reads"] += 1
-                        fake.read_targets.append(target)
-                        # Explicit synthetic state: an unacknowledged alarm says so.
-                        alarm = dict(fake.alarms.get(target, {"target_id": target, "kind": "triggered_alarm",
-                                                               "acked": False}))
+                        live = fake._accepts(self.headers.get("X-Session"), read=True)
+                        if not live:
+                            fake.unauthorised["reads"] += 1
+                        else:
+                            fake.counts["reads"] += 1
+                            fake.read_targets.append(target)
+                            # Explicit synthetic state: an unacknowledged alarm says so.
+                            alarm = dict(fake.alarms.get(target, {"target_id": target, "kind": "triggered_alarm",
+                                                                   "acked": False}))
+                    if not live:
+                        return self._reply(401, {"error": "no session"})
                     mode = fake.script.get("read", "normal")
                     if mode == "error":
                         return self._reply(500, alarm)

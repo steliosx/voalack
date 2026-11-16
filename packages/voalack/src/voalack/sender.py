@@ -432,6 +432,15 @@ class OwnerSession:
             raise OwnerStopped("session_unregistered")
         self.token = token
 
+    def _forget_rejected_session(self, *statuses: Optional[int]) -> None:
+        """Audit 2026-11-08 finding 6: a provider reply of HTTP 401 means ONE no longer accepts this
+        session (it restarted, or the session expired). Forget the session locally, so the next
+        operation logs in again and registers the new session before using it; the old session stays
+        registered. Nothing is retried here, and the reply keeps its own classification: a preflight
+        answered 401 is aborted without dispatch, and an ACK answered 401 stays uncertain."""
+        if 401 in statuses:
+            self.token = None
+
     def revoke(self) -> None:
         with self._lock:
             self._fence()
@@ -521,6 +530,7 @@ class OwnerSession:
             except (OSError, http.client.HTTPException, ValueError) as exc:
                 observation.update(status=None, error=type(exc).__name__)
             observation["read_completed_at"] = _utc_now()
+            self._forget_rejected_session(observation["status"])
         self._hook("before_record", read_id)
         rec = self._owner_call("SELECT * FROM voalack.record_reconciliation(%s, %s, %s, %s, %s::jsonb)",
                                (read_id, self.instance_id, self.generation, self.incarnation,
@@ -595,6 +605,7 @@ class OwnerSession:
                     except (OSError, http.client.HTTPException, ValueError) as exc:
                         observation.update(status=None, error=type(exc).__name__)
                     observation["read_completed_at"] = _utc_now()
+                    self._forget_rejected_session(observation["status"])
                 self._hook("before_record", read_id)
                 rec = self._owner_call("SELECT * FROM voalack.record_recovery_read(%s, %s, %s, %s, %s::jsonb)",
                                        (read_id, self.instance_id, self.generation, self.incarnation,
@@ -652,6 +663,7 @@ class OwnerSession:
             except (OSError, http.client.HTTPException, ValueError):
                 read_error = "transport"
             completed = datetime.now(timezone.utc)
+            self._forget_rejected_session(status)
         summary = observation_summary(status, alarm, read_error)
         self._hook("before_observation_record", obs_id)
         # Times travel as ISO 8601 text with microseconds: a process-wide psycopg2 datetime adapter (Alerta
@@ -685,6 +697,7 @@ class OwnerSession:
         except (OSError, http.client.HTTPException, ValueError) as exc:
             status, alarm = None, None
             observation.update(error=type(exc).__name__)
+        self._forget_rejected_session(status)          # a 401 is still preflight_unavailable below
         known = status == 200 and isinstance(alarm, dict) and alarm.get("target_id") == target_id
         # A "children" key of any value is a grouped alarm, as the database's settlement rules read it
         # (`al ? 'children'`); an empty list must not pass here and then never settle (audit finding 18).
@@ -806,7 +819,8 @@ class OwnerSession:
             hook(attempt_id)                         # lab delay/fault point (scripted)
 
         # 2. Session for this attempt (fenced provider operation); a failure before consumption is
-        #    a definitive no-dispatch.
+        #    a definitive no-dispatch. At most one login per attempt: none is held at first use, or
+        #    after a 401 reply made this owner forget its session (audit 2026-11-08, finding 6).
         if self.token is None:
             self._fence()
             try:
@@ -931,6 +945,8 @@ class OwnerSession:
                 observation.update(read_status=read_status, read_back=read_back)
             except (OSError, http.client.HTTPException, ValueError) as exc:
                 observation.update(read_error=type(exc).__name__)
+        # The token is not used again in this attempt; the observation is recorded unchanged below.
+        self._forget_rejected_session(observation.get("status"), observation.get("read_status"))
         hook = self.hooks.get("before_record")
         if hook is not None:
             hook(attempt_id)                         # lab fault point (scripted)

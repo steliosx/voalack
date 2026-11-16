@@ -388,6 +388,14 @@ loopback fake (`fake-one/v1`) in the test guest.
   consumption, an unknown consume COMMIT and attempts left by a contained owner are `UNCERTAIN`;
   the physical guard stays and nothing is resent. Late results from a fenced owner are kept as
   evidence only.
+* **Sessions.** The owner logs in only when it holds no session, at most once per operation, and
+  registers each session by digest before using it (S3b). Any HTTP 401 reply (to a preflight, an
+  ACK, a read-back, or a reconciliation, recovery or observation read) means ONE no longer accepts
+  the session, for example after a restart or an expiry: the owner forgets it, and the next
+  operation logs in again (audit 2026-11-08, finding 6). The old session stays registered, so
+  quiescence still covers it. The reply keeps its own classification: a preflight answered 401 is
+  aborted without dispatch and counts toward the effect's three attempts, and an ACK answered 401
+  stays uncertain and is never resent. Other statuses (403, 429, 5xx) keep the session.
 
 Roles: `voalack_sender` (lab login `lab_sender`) reads effects, attempts, guards, owners and
 instance configuration, executes only the owner and attempt functions, and passes the same
@@ -395,7 +403,8 @@ readiness checks as the verifier with its own profile. Readiness also refuses an
 column or sequence) outside a profile's listed reads.
 
 Tests: `tests/capture/test_t04_s2_sender.py` with the loopback fake provider in
-`tests/capture/fake_one.py`.
+`tests/capture/fake_one.py`; session loss, with the fake's opt-in `session` modes:
+`tests/capture/test_audit6_relogin.py`.
 
 ## Transport, not-sent and retry (T04 S3a; fake ONE provider only)
 
@@ -404,7 +413,8 @@ final authority again after the connect (database, committed before any byte), t
 write. Only a connect step that failed with no socket is `not_sent` (`record_not_sent`, terminal for
 that attempt; the guard is released and the effect becomes retryable after a durable backoff, or
 `BLOCKED` after three attempts in total). Every failure after a successful connect — including
-HTTP 401/403/429/5xx, resets, partial writes and timeouts — is uncertain and never retried.
+HTTP 401/403/429/5xx, resets, partial writes and timeouts — is uncertain and never retried (a 401
+also makes the owner forget its session; see Sessions above).
 `apply_with_retry` retries only after a known-committed `not_sent`; the budget, backoff and retry
 lineage are enforced by `start_attempt`: only the live owner process that recorded the `not_sent` may
 retry. An effect whose lineage belongs to a stopped or replaced process stays `QUEUED` and is never
