@@ -34,7 +34,7 @@ The integration service account performs the ONE API action; the comment identif
 
 ## Status
 
-Commit identifiers in this README refer to the private development history; this public repository starts from a single snapshot of the reviewed tree. Evidence checked **8 October 2026** at the reviewed S4 commit `759e59c` (earlier stages at `32e72d7`). Each stage below was merged only after independent review of its exact commit. Their PostgreSQL and Alerta tests ran in disposable microVMs, and that evidence is recorded with each review, outside this repository. Since 15 November 2026 the repository's hosted CI also runs the full capture suite (PostgreSQL 18.7 and Alerta 9.1.0, in a pinned container) on every push to `main` and `vo/**`, alongside the ACK-core, envelope, launcher and secret-scan jobs.
+Commit identifiers in this README refer to the private development history; this public repository starts from a single snapshot of the reviewed tree. Evidence checked **8 October 2026** at the reviewed S4 commit `759e59c` (earlier stages at `32e72d7`). Each stage below was merged only after independent review of its exact commit. Their PostgreSQL and Alerta tests ran in disposable microVMs, and that evidence is recorded with each review, outside this repository. Since 15 November 2026 the repository's hosted CI also runs the full capture suite (PostgreSQL 18.7 and Alerta 9.1.0, in a pinned container) on every push to `main` and `vo/**` except `vo/integration` (which only repeats `main`'s merge commit), alongside the ACK-core, envelope, launcher and secret-scan jobs.
 
 | Area | State | Evidence and limits |
 | --- | --- | --- |

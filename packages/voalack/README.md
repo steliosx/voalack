@@ -229,6 +229,8 @@ unrecognised, so eligible ACKs are refused.
    the early alerts-table lock, and applies the ordered protector, admission, schema and
    post-protection SQL in one transaction. It installs the protected schema, capture trigger,
    owner functions and runtime grants; a refused installation must not be bypassed.
+   Once installed, the protected objects cannot be changed, even by a later release: see the
+   [upgrade limit](../../docs/BETA_OPERATIONS.md#stop-removal-and-rollback).
 3. As an administrator: create the immutable `binding_revisions` row with the alert's current
    open `alert_lifetime_id`, then enroll it through
    `voalack.enroll_binding(alert_id, binding_id, binding_revision)`. Do not insert the current
