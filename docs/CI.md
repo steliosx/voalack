@@ -14,7 +14,8 @@ Since 2026-10-30 (owner direction), the CI jobs run on GitHub-hosted `ubuntu-24.
 | `envelope` | `ci/run_envelope_tests.sh` | Builds the wheels and runs the signed-envelope tests against the installed `voalack` wheel |
 | `launcher` | `ci/run_launcher_tests.sh` | Launcher polling, cleanup verification and failure paths, against fake `gh` and `smolvm` |
 | `secrets` | `ci/run_secret_scan.sh` | Pinned gitleaks 8.24.3 over the history, the current tree and the members of the current archives (see Secret scan) |
-| `capture` | `lab/run_capture.sh` | The full capture suite with PostgreSQL 18.7 and Alerta 9.1.0, in a pinned container; pushes only (see Capture suite) |
+| `capture` | `lab/run_capture.sh` | The full capture suite with PostgreSQL 18.7 and Alerta 9.1.0, in a pinned container; pushes only, not to `vo/integration` (see Capture suite) |
+| `setup-pins` | `lab/setup_guest.sh`, a copy with one pin changed | Negative controls for the PGDG key fingerprint and PostgreSQL version pins, in the capture job's image; same pushes as `capture`, not a required check (see Setup pin negatives) |
 
 ## Capture suite
 
@@ -25,8 +26,10 @@ pinned profile, then runs every test in `tests/capture`.
 
 - **Pushes of this repository only.** It runs for pushes to `main` and `vo/**`, which test the exact head a review
   names, and only when the repository ID is this repository's, so a copy of the workflow in a fork does not run it. It
-  never runs for pull requests: the push of the same branch already covers it, and a run on GitHub's merge commit
-  would repeat about an hour of work. A skipped pull request instance of this job is not evidence for anything.
+  skips pushes to `vo/integration`: that branch is only ever fast-forwarded to `main`'s merge commit, so its run would
+  repeat `main`'s on an identical tree. It never runs for pull requests: the push of the same branch already covers
+  it, and a run on GitHub's merge commit would repeat about an hour of work. A skipped pull request instance of this
+  job is not evidence for anything.
 - **Container options.** `--shm-size=1g`, because Docker's default 64 MiB `/dev/shm` is smaller than a guest's and
   PostgreSQL keeps its dynamic shared memory there. `--cap-add SYS_ADMIN` with AppArmor unconfined, because the anchor
   full-disk test mounts a 64 KiB tmpfs and would otherwise skip. Every step of the job runs with this widened
@@ -45,8 +48,8 @@ pinned profile, then runs every test in `tests/capture`.
   make a container and a microVM equivalent in isolation, kernel, filesystem or timing, or establish untested behaviour.
 
 - **Fork pull requests: a guard, not a boundary.** In every job that runs for pull requests, the first step fails a
-  pull request from a fork before checkout. The `capture` job never runs for pull requests (its job-level condition
-  admits only pushes of this repository's ID), so it has no such step. A fork pull request can edit this workflow, guard included, so the guard only stops an unmodified
+  pull request from a fork before checkout. The `capture` and `setup-pins` jobs never run for pull requests (their
+  job-level condition admits only pushes of this repository's ID), so they have no such step. A fork pull request can edit this workflow, guard included, so the guard only stops an unmodified
   workflow. The boundary is elsewhere: jobs run on GitHub's disposable hosted runners (never a maintainer machine),
   the token is read-only and no repository secrets are used. Since 15 November 2026 the repository requires approval
   before workflows run for any outside contributor (`all_external_contributors`; it was `first_time_contributors`).
@@ -57,15 +60,36 @@ pinned profile, then runs every test in `tests/capture`.
   pushes and deletion are blocked, and nobody can bypass it. The `capture` job is not a required check, because a
   skipped pull request instance of a job satisfies a required check; its push result is checked before a merge
   instead. These are mutable settings, recorded here as read, not guarantees of the source.
-- **Published evidence.** Every job uploads an explicit list of files or patterns, never a whole directory, so a new
-  file a job writes is not published until the list is changed and reviewed. The patterns limit what is published; they
-  do not sanitise contents.
+- **Published evidence.** Every job uploads an explicit list of files or patterns, never a whole directory. A new file
+  a job writes that matches no listed name or pattern is not published until the list is changed and reviewed. A new
+  file that matches a pattern, such as `dist/*.whl` or the capture job's `*.txt`, `*.json`, `*.jsonl` and `*.log`, is
+  published without any change to the list. The lists limit which files are published; they do not sanitise contents,
+  so reviewing what a published file contains stays a separate step.
 - **Least privilege.** The workflow token is read-only (`contents: read`), checkouts do not persist credentials, and
   every action is pinned to a full commit SHA.
 - **No self-hosted workflow.** The dispatch-only `forgehold-smoke` workflow has been removed from this
   candidate. All remaining workflows target hosted runners. Keep maintainer-host and shared-lane runners
   disconnected from this public repository; source guards do not safely isolate an attached runner from
   contributor-controlled workflows. Adding a runner or dispatch route requires its own review and authority.
+
+## Setup pin negatives
+
+The `setup-pins` job checks that the two pins `lab/setup_guest.sh` enforces before any test runs really stop
+provisioning. It runs on the same pushes as the `capture` job and in the same pinned image, without that job's widened
+container options. It is not a required check. Each of its two cases copies the script with exactly one pinned value
+changed, records the `diff` against the reviewed script (it must show exactly one changed line), runs the copy, and
+requires it to fail with that check's exact message, at that check:
+
+| Case | Changed line | Required stop message | Where it must have stopped |
+|---|---|---|---|
+| `key` | `PGDG_KEY_FPR` set to forty zeros | `PGDG repository key is not 0000000000000000000000000000000000000000 (got: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8)` | Before PostgreSQL is installed (`/usr/lib/postgresql/18/bin/postgres` is absent) |
+| `version` | The `server_version_num` check expects `180006` instead of `180007` | `PostgreSQL server_version_num is 180007, not 180006 (18.7)` | After `pg-version.txt` is written (just before the check) and before `pip-version.txt` (just after it) |
+
+A download or provisioning failure does not produce the exact message, so it fails the case instead of passing it.
+In the `version` case, so does a PGDG release other than 18.7, whose message names another version. Each case writes
+a one-line `verdict.txt` and publishes it with `diff.txt`, the setup output `setup.txt` and the `*.txt` files setup
+wrote, as `setup-pins-<case>-evidence-<sha>-run<id>-attempt<n>`, kept for 90 days. The `capture` job remains the
+positive control: it runs the unchanged script, which must pass both checks.
 
 ## Security scans (informational)
 
