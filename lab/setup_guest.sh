@@ -8,7 +8,10 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y -qq --no-install-recommends ca-certificates curl gnupg lsb-release >/dev/null
 install -d /usr/share/postgresql-common/pgdg
-curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+# Retry a broken download (a transfer cut short is curl error 18, which plain --retry does not cover). The key is
+# still accepted only by its fingerprint below.
+curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors --connect-timeout 30 --max-time 120 \
+  -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
 # The repository key is pinned by its primary fingerprint, not by the file's hash: the published file can gain new
 # signatures while the key stays the same. The file must hold exactly one primary key, and it must be this one.
 PGDG_KEY_FPR=B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
